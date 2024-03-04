@@ -6,23 +6,32 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-latest
 
     steps:
-      - run: echo "There're no test at the moment, so just showing the possibility to run smth here ;)"
+      - run:  echo "There're no test at the moment, so just showing the possibility to run smth here ;)"
 
       - name: Check out repository code
         uses: actions/checkout@v4
 
       - name: List files in the repository
-        run: ls ${{ github.workspace }}
+        run:  ls ${{ github.workspace }}
+
+      - run:  yarn install
+      
+      - run:  yarn test
+
   build:
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-latest
 
     steps:
-      - run: echo "Build step ;)"
+      - name: Build step ;)
+        uses: actions/checkout@v4
+
+      - run:  docker build -t echolocal .
+
   deploy:
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-latest
 
     steps:
-      - run: echo "Build step ;)"
+      - run:  echo "Deploy step ;)"
