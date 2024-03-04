@@ -7,7 +7,9 @@
     "frontend"
   ],
   "scripts": {
-    "start": "yarn workspace backend start & yarn workspace frontend start"
+    "start": "yarn workspace backend start & yarn workspace frontend start",
+    "start:frontend": "yarn workspace frontend start",
+    "start:backend": "yarn workspace backend start"
   },
   "repository": {
     "type": "git",
