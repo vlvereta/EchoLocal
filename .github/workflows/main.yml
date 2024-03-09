@@ -1,11 +1,13 @@
-name: CI/CD
+name: TEST, Build and Push
 
 on:
   push:
     branches: [main]
 
 env:
-  ARTIFACT_REGISTRY: ${{ secrets.GCP_ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echolocal-images/
+  ARTIFACT_REGISTRY: ${{ secrets.GCP_ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}
+  REPOSITORY: echolocal-images
+  IMAGE: echolocal
 
 jobs:
   test:
@@ -41,10 +43,10 @@ jobs:
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev --quiet
 
       - name: Build image
-        run: docker build . --tag ${{ env.GAR_LOCATION }}
+        run: docker build . --tag $ARTIFACT_REGISTRY/$REPOSITORY/$IMAGE:$GITHUB_SHA
 
       - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}
+        run: docker push $ARTIFACT_REGISTRY/$REPOSITORY/$IMAGE:$GITHUB_SHA
