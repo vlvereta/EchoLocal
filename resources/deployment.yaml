@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echolocal-app
+  namespace: echolocal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echolocal-app
+  template:
+    metadata:
+      labels:
+        app: echolocal-app
+    spec:
+      containers:
+      - name: echolocal-app
+        image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG
+        ports:
+        - containerPort: 8000
