@@ -14,7 +14,7 @@ spec:
         app: echolocal-app
     spec:
       containers:
-      - name: echolocal-app
+      - name: echolocal
         image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG
         ports:
         - containerPort: 8000
