@@ -6,10 +6,9 @@ COPY . .
 
 RUN yarn install
 
-# Expose frontend app port
-EXPOSE 8000
+EXPOSE 8000 3000
 
-CMD ["yarn", "start:frontend"]
+CMD ["yarn", "start"]
 # CMD [ "/bin/sh" ]
 
 # docker build -t echolocal:latest .
