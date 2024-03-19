@@ -14,6 +14,7 @@ const Home = () => {
         />
       </a>
       <h1>Get Started Building PWAs with Preact-CLI</h1>
+      <h2>Actually not PWAs, but it doesn't matter ;)</h2>
       <section style={{ display: "flex", justifyContent: "center" }}>
         <HealthCheck />
       </section>
