@@ -10,7 +10,7 @@ spec:
     - protocol: TCP
       port: 80
       name: tcp-80
-      targetPort: 8000
+      targetPort: 8080
     - protocol: TCP
       port: 3000
       name: tcp-3000

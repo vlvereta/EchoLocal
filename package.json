@@ -7,15 +7,17 @@
     "frontend"
   ],
   "scripts": {
-    "start": "yarn workspace backend start & yarn workspace frontend start",
-    "start:frontend": "yarn workspace frontend start",
+    "start": "yarn workspace backend start & yarn workspace frontend dev",
+    "start:frontend": "yarn workspace frontend dev",
     "start:backend": "yarn workspace backend start",
-    "test": "echo TESTING!"
+    "build": "yarn workspace frontend build",
+    "serve": "yarn workspace backend start & yarn workspace frontend serve",
+    "test": "yarn workspace frontend test"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:vlvereta/EchoLocal.git"
   },
   "author": "Vladyslav Vereta <vlvereta.92@gmail.com>",
-  "description": "A simple localisation service for practice purposes ;)"
+  "description": "A simple localization service for practice purposes ;)"
 }

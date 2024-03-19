@@ -6,10 +6,12 @@ COPY . .
 
 RUN yarn install
 
-EXPOSE 8000 3000
+RUN yarn build
 
-CMD ["yarn", "start"]
+EXPOSE 8080 3000
+
+CMD ["yarn", "serve"]
 # CMD [ "/bin/sh" ]
 
 # docker build -t echolocal:latest .
-# docker run --rm -p 8000:8000 echolocal
+# docker run --rm -p 80:8080 -p 3000:3000 echolocal
