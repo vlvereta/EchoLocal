@@ -21,6 +21,8 @@
     ]
   },
   "dependencies": {
+    "bootstrap": "5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "dotenv-webpack": "^8.0.1",
     "preact": "^10.10.0",
     "preact-render-to-string": "^5.2.1",

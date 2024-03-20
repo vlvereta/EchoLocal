@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "short_name": "frontend",
+  "name": "EchoLocal",
+  "short_name": "EchoLocal",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -33,7 +33,13 @@
 	padding: 0.5rem 1rem;
 }
 
+.logo i {
+	font-size: 1.5rem;
+	line-height: normal;
+}
+
 .logo h1 {
+	margin: 0;
 	padding: 0 0.5rem;
 	font-size: 1.5rem;
 	line-height: 2rem;

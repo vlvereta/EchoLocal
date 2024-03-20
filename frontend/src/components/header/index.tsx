@@ -5,13 +5,8 @@ import style from "./style.css";
 const Header = () => (
   <header class={style.header}>
     <a href="/" class={style.logo}>
-      <img
-        src="../../assets/preact-logo-inverse.svg"
-        alt="Preact Logo"
-        height="32"
-        width="32"
-      />
-      <h1>Preact CLI</h1>
+      <i class="bi bi-globe" />
+      <h1>EchoLocal</h1>
     </a>
     <nav>
       <Link activeClassName={style.active} href="/">
@@ -19,9 +14,6 @@ const Header = () => (
       </Link>
       <Link activeClassName={style.active} href="/profile">
         Me
-      </Link>
-      <Link activeClassName={style.active} href="/profile/john">
-        John
       </Link>
     </nav>
   </header>

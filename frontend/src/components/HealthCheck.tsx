@@ -23,8 +23,10 @@ const HealthCheck = () => {
 
   return (
     <div>
-      <button onClick={checkHealth}>Check Backend Health</button>
-      <div>{healthStatus}</div>
+      <button type="button" class="btn btn-primary" onClick={checkHealth}>
+        Check Backend Health
+      </button>
+      <div style={{ height: "2rem", lineHeight: "2rem" }}>{healthStatus}</div>
     </div>
   );
 };

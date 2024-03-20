@@ -7,14 +7,27 @@ import Header from "./header";
 import Home from "../routes/home";
 import Profile from "../routes/profile";
 
+const BackgroundImage = () => (
+  <i
+    class="bi bi-globe"
+    style={{
+      top: "5%",
+      zIndex: 0,
+      color: "#f1f1f1",
+      fontSize: "80vw",
+      position: "absolute",
+    }}
+  />
+);
+
 const App = () => (
   <div id="app">
     <Header />
     <main>
+      {/* <BackgroundImage /> */}
       <Router>
         <Route path="/" component={Home} />
         <Route path="/profile/" component={Profile} user="me" />
-        <Route path="/profile/:user" component={Profile} />
       </Router>
     </main>
   </div>
