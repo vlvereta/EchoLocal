@@ -5,11 +5,10 @@ on:
     branches: [main]
 
 env:
-  ARTIFACT_REGISTRY: ${{ secrets.GCP_ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}
-  REPOSITORY: echolocal-images
+  ARTIFACT_REGISTRY_URL: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}
+  REPOSITORY_NAME: echolocal-images
   IMAGE: echolocal
   GKE_CLUSTER: echolocal-cluster
-  GKE_ZONE: europe-central2
   DEPLOYMENT_NAME: echolocal-app
 
 jobs:
@@ -54,20 +53,20 @@ jobs:
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev --quiet
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
 
       - name: Build image
-        run: docker build . --tag $ARTIFACT_REGISTRY/$REPOSITORY/$IMAGE:$GITHUB_SHA
+        run: docker build . --tag $ARTIFACT_REGISTRY_URL/$REPOSITORY_NAME/$IMAGE:$GITHUB_SHA
 
       - name: Push image
-        run: docker push $ARTIFACT_REGISTRY/$REPOSITORY/$IMAGE:$GITHUB_SHA
+        run: docker push $ARTIFACT_REGISTRY_URL/$REPOSITORY_NAME/$IMAGE:$GITHUB_SHA
 
       # Get the GKE credentials so we can deploy to the cluster
       - name: Set up GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
+          location: ${{ secrets.GCP_REGION }}
 
       # Set up kustomize
       - name: Set up Kustomize
@@ -80,7 +79,7 @@ jobs:
       - name: Deploy
         run: |-
           # replacing the image name in the k8s template
-          ./kustomize edit set image LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG=$ARTIFACT_REGISTRY/$REPOSITORY/$IMAGE:$GITHUB_SHA
+          ./kustomize edit set image LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG=$ARTIFACT_REGISTRY_URL/$REPOSITORY_NAME/$IMAGE:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -
           kubectl -n echolocal rollout status deployment/$DEPLOYMENT_NAME
           kubectl -n echolocal get services -o wide
