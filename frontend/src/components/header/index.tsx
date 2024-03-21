@@ -1,5 +1,8 @@
-import { h } from "preact";
+import { h, Fragment } from "preact";
 import { Link } from "preact-router/match";
+
+import { LocalStorageItem } from "../../types";
+
 import style from "./style.css";
 
 const Header = () => (
@@ -12,9 +15,28 @@ const Header = () => (
       <Link activeClassName={style.active} href="/">
         Home
       </Link>
-      <Link activeClassName={style.active} href="/profile">
-        Me
-      </Link>
+      {localStorage.getItem(LocalStorageItem.Token) ? (
+        <>
+          <Link activeClassName={style.active} href="/profile">
+            Me
+          </Link>
+          <Link
+            as="button"
+            onClick={() => localStorage.removeItem(LocalStorageItem.Token)}
+          >
+            Sign out
+          </Link>
+        </>
+      ) : (
+        <>
+          <Link activeClassName={style.active} href="/signin">
+            Sign in
+          </Link>
+          <Link activeClassName={style.active} href="/signup">
+            Sign up
+          </Link>
+        </>
+      )}
     </nav>
   </header>
 );
