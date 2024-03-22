@@ -1,7 +1,10 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
+import { useAuth } from "./AuthContext";
 
 const FetchUsersButton = () => {
+  const { token } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState([]);
 
@@ -10,7 +13,12 @@ const FetchUsersButton = () => {
 
     try {
       const response = await fetch(
-        `${process.env.PREACT_APP_API_URL}/api/users`
+        `${process.env.PREACT_APP_API_URL}/api/users`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await response.json();
       setUsers(data);
@@ -23,9 +31,18 @@ const FetchUsersButton = () => {
 
   return (
     <div>
-      <button type="button" class="btn btn-primary" onClick={fetchUsers} disabled={isLoading}>
+      <button
+        type="button"
+        class="btn btn-primary"
+        onClick={fetchUsers}
+        disabled={isLoading}
+      >
         {isLoading ? (
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+          <span
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          />
         ) : (
           <span>TEST Users</span>
         )}

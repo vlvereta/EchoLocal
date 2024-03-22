@@ -5,10 +5,12 @@ import { LocalStorageItem } from "../types";
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;
+  token: string;
   setToken(token: string): void;
   clearToken(): void;
 }>({
   isAuthenticated: false,
+  token: "",
   setToken: (token) => console.log(token),
   clearToken: () => console.log(""),
 });
@@ -24,6 +26,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const value = {
     isAuthenticated: !!token,
+    token,
     setToken,
     clearToken: () => setToken(""),
   };
