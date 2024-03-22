@@ -36,6 +36,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v2.0
         with:
           envkey_PREACT_APP_API_URL: ${{ secrets.API_URL }}
+          envkey_PREACT_APP_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           envkey_DB_USER: ${{ secrets.DB_USER }}
           envkey_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           envkey_DB_HOST: ${{ secrets.DB_HOST }}
