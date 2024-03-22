@@ -1,8 +1,8 @@
 import { h } from "preact";
 
-import HealthCheck from "../../components/HealthCheck";
+import FetchUsersButton from "../../components/FetchUsersButton";
 
-const Home = () => {
+const Dashboard = () => {
   return (
     <div>
       <h2>WORK IN PROGRESS</h2>
@@ -15,10 +15,10 @@ const Home = () => {
           gap: "3rem",
         }}
       >
-        <HealthCheck />
+        <FetchUsersButton />
       </section>
     </div>
   );
 };
 
-export default Home;
+export default Dashboard;

@@ -1,10 +1,17 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
+import { route } from "preact-router";
+import { useEffect, useState } from "preact/hooks";
 
 import { apiURL } from "../..";
-import { LocalStorageItem } from "../../types";
+import { useAuth } from "../../components/AuthContext";
 
 const SigninPage = () => {
+  const { isAuthenticated, setToken } = useAuth();
+
+  useEffect(() => {
+    isAuthenticated && route("dashboard", true);
+  }, [isAuthenticated]);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,7 +39,8 @@ const SigninPage = () => {
 
       if (response.ok) {
         const { token } = await response.json();
-        localStorage.setItem(LocalStorageItem.Token, token);
+        setToken(token);
+        route("dashboard");
       } else {
         alert("Failed to log in.");
       }

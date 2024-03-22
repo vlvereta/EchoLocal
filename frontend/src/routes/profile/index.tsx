@@ -1,8 +1,5 @@
 import { h } from "preact";
-import { route } from "preact-router";
 import { useEffect, useState } from "preact/hooks";
-
-import { LocalStorageItem } from "../../types";
 
 interface Props {
   user: string;
@@ -12,10 +9,6 @@ interface Props {
 const Profile = ({ user }: Props) => {
   const [time, setTime] = useState<number>(Date.now());
   const [count, setCount] = useState<number>(10);
-
-  useEffect(() => {
-    if (!localStorage.getItem(LocalStorageItem.Token)) route("/signin", true);
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(Date.now()), 1000);

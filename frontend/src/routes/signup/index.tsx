@@ -1,10 +1,17 @@
 import { h } from "preact";
 import { route } from "preact-router";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import { apiURL } from "../..";
+import { useAuth } from "../../components/AuthContext";
 
 const SignupPage = () => {
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    isAuthenticated && route("dashboard", true);
+  }, [isAuthenticated]);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -27,7 +34,7 @@ const SignupPage = () => {
     }
 
     try {
-      const response = await fetch(`${apiURL}/signup`, {
+      const response = await fetch(`${apiURL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +48,7 @@ const SignupPage = () => {
       });
 
       if (response.ok) {
-        route("/signin", true);
+        route("/signin");
       } else {
         alert("Failed to sign up.");
       }
