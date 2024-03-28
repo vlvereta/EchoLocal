@@ -25,11 +25,11 @@ const Header = () => {
       <nav>
         {isAuthenticated ? (
           <>
-            <Link activeClassName={style.active} href="/dashboard">
-              Dashboard
+            <Link activeClassName={style.active} href="/onboarding">
+              Onboarding
             </Link>
             <Link activeClassName={style.active} href="/profile">
-              Me
+              Profile
             </Link>
             <Link as="button" onClick={handleSignOut}>
               Sign out

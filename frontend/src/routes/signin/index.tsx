@@ -9,7 +9,7 @@ const SigninPage = () => {
   const { isAuthenticated, setToken } = useAuth();
 
   useEffect(() => {
-    isAuthenticated && route("dashboard", true);
+    isAuthenticated && route("onboarding", true);
   }, [isAuthenticated]);
 
   const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ const SigninPage = () => {
       if (response.ok) {
         const { token } = await response.json();
         setToken(token);
-        route("dashboard");
+        route("onboarding");
       } else {
         alert("Failed to log in.");
       }

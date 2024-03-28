@@ -9,7 +9,7 @@ const SignupPage = () => {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    isAuthenticated && route("dashboard", true);
+    isAuthenticated && route("onboarding", true);
   }, [isAuthenticated]);
 
   const [formData, setFormData] = useState({
