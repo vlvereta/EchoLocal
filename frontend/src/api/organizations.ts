@@ -31,14 +31,15 @@ export const getOrganization = async (
 
 export const createOrganization = async (
   token: string,
-  { name }: CreateOrganizationPayload
+  payload: CreateOrganizationPayload
 ): Promise<Organization> => {
   const response = await fetch(`${apiURL}/organizations`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
-    body: name,
+    body: JSON.stringify(payload),
   });
   return response.json();
 };
@@ -47,11 +48,10 @@ export const deleteOrganization = async (
   token: string,
   { id }: DeleteOrganizationPayload
 ): Promise<void> => {
-  const response = await fetch(`${apiURL}/organizations/${id}`, {
+  await fetch(`${apiURL}/organizations/${id}`, {
     method: "DELETE",
     headers: {
       authorization: `Bearer ${token}`,
     },
   });
-  return response.json();
 };

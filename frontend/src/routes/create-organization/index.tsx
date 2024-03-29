@@ -28,10 +28,15 @@ const CreateOrganization = () => {
 
     try {
       const response = await createOrganization(token, formData);
-      route(`/organizations/${response.id}`);
+
+      if (response?.id) {
+        route(`/organizations/${response.id}`);
+      } else {
+        route("/onboarding");
+      }
     } catch (error) {
       setIsError(true);
-      console.error("Error while creating organization.", error);
+      console.error("Error while creating organization:", error);
     }
 
     setIsLoading(false);

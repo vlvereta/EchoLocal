@@ -24,11 +24,11 @@ router.post("/", async (req, res) => {
     if (!passwordIsValid)
       return res.status(401).send({ auth: false, token: null });
 
-    const token = jwt.sign({ id: user.user_id }, JWTSecret, {
+    const token = jwt.sign({ id: user.id }, JWTSecret, {
       expiresIn: 86400, // 24 hours
     });
 
-    res.status(200).send({ auth: true, token: token });
+    res.status(200).send({ auth: true, token });
   } catch (error) {
     console.error("Error querying the database:", error);
     res.status(500).send("Server error");

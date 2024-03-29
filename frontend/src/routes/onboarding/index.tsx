@@ -76,7 +76,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div class="d-flex flex-column gap-2">
+    <div class="d-flex flex-column w-50 gap-2">
       <h2 class="text-center">Select organization</h2>
       {organizations.map((org, i) => (
         <button
@@ -88,6 +88,13 @@ const Dashboard = () => {
           {org.name}
         </button>
       ))}
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-block"
+        onClick={() => route("/create-organization")}
+      >
+        Create new
+      </button>
     </div>
   );
 };
