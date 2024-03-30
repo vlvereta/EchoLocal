@@ -6,7 +6,7 @@ import { Organization } from "../../types";
 import { useAuth } from "../../components/AuthContext";
 import { getOrganizations } from "../../api/organizations";
 
-const Dashboard = () => {
+const Organizations = () => {
   const { token } = useAuth();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -82,7 +82,7 @@ const Dashboard = () => {
         <button
           type="button"
           key={`${org.id}_${i}`}
-          onClick={() => route(`/organizations/${org.id}`)}
+          onClick={() => route(`/Organizations/${org.id}`)}
           class="btn btn-outline-secondary btn-block"
         >
           {org.name}
@@ -99,4 +99,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Organizations;

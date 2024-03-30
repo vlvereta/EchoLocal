@@ -25,8 +25,8 @@ const Header = () => {
       <nav>
         {isAuthenticated ? (
           <>
-            <Link activeClassName={style.active} href="/onboarding">
-              Onboarding
+            <Link activeClassName={style.active} href="/organizations">
+              Organizations
             </Link>
             <Link activeClassName={style.active} href="/profile">
               Profile

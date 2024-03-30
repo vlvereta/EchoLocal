@@ -4,6 +4,7 @@ import {
   CreateOrganizationPayload,
   DeleteOrganizationPayload,
   Organization,
+  ExtendedOrganization,
 } from "../types";
 
 export const getOrganizations = async (
@@ -20,7 +21,7 @@ export const getOrganizations = async (
 export const getOrganization = async (
   token: string,
   { id }: GetOrganizationPayload
-): Promise<Organization> => {
+): Promise<ExtendedOrganization> => {
   const response = await fetch(`${apiURL}/organizations/${id}`, {
     headers: {
       authorization: `Bearer ${token}`,

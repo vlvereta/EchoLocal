@@ -30,9 +30,9 @@ const CreateOrganization = () => {
       const response = await createOrganization(token, formData);
 
       if (response?.id) {
-        route(`/organizations/${response.id}`);
+        route(`/dashboard/${response.id}`);
       } else {
-        route("/onboarding");
+        route("/organizations");
       }
     } catch (error) {
       setIsError(true);
