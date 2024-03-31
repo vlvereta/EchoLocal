@@ -82,7 +82,7 @@ const Organizations = () => {
         <button
           type="button"
           key={`${org.id}_${i}`}
-          onClick={() => route(`/Organizations/${org.id}`)}
+          onClick={() => route(`/dashboard/${org.id}`)}
           class="btn btn-outline-secondary btn-block"
         >
           {org.name}
