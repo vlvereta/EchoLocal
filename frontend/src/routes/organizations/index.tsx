@@ -2,7 +2,7 @@ import { h } from "preact";
 import { route } from "preact-router";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
-import { Organization } from "../../types";
+import { Organization } from "../../types/entities";
 import { useAuth } from "../../components/AuthContext";
 import { getOrganizations } from "../../api/organizations";
 

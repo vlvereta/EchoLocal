@@ -1,4 +1,4 @@
-import { ExtendedOrganization } from "./types";
+import { ExtendedOrganization } from "./types/entities";
 
 export const mockedExtendedOrganization: ExtendedOrganization = {
   id: "111",

@@ -1,39 +1,34 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
 
-const HealthCheck = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [healthStatus, setHealthStatus] = useState("");
+import { apiURL } from "..";
 
-  const checkHealth = () => {
+const HealthCheck = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [healthStatus, setHealthStatus] = useState<string>("");
+
+  const checkHealth = async () => {
     setIsLoading(true);
 
-    fetch(`${process.env.PREACT_APP_API_URL}/api/health`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.text();
-      })
-      .then((data) => {
-        setHealthStatus(data);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setHealthStatus("Failed to get health status");
-      });
+    try {
+      const response = await fetch(`${apiURL}/health`);
+      const status = await response.text();
+      setHealthStatus(status);
+    } catch (error) {
+      console.error("Error during healthcheck:", error);
+      setHealthStatus("Backend is UNHEALTHY!");
+    }
 
-      setIsLoading(false);
+    setIsLoading(false);
   };
 
   return (
-    <div>
-      <button type="button" class="btn btn-primary" onClick={checkHealth} disabled={isLoading}>
-        {isLoading ? (
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-        ) : (
-          <span>Check Backend Health</span>
-        )}
+    <div class="is-flex is-flex-direction-column is-align-items-center">
+      <button
+        onClick={checkHealth}
+        class={`button is-primary${isLoading ? " is-loading" : ""}`}
+      >
+        Check Backend Health
       </button>
       <div style={{ height: "2rem", lineHeight: "2rem" }}>{healthStatus}</div>
     </div>

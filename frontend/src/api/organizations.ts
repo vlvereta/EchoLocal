@@ -1,11 +1,10 @@
 import { apiURL } from "../index";
+import { ExtendedOrganization, Organization } from "../types/entities";
 import {
-  GetOrganizationPayload,
   CreateOrganizationPayload,
   DeleteOrganizationPayload,
-  Organization,
-  ExtendedOrganization,
-} from "../types";
+  GetOrganizationPayload,
+} from "../types/requests";
 
 export const getOrganizations = async (
   token: string

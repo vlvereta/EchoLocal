@@ -1,7 +1,7 @@
 import { h, createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
-import { LocalStorageItem } from "../types";
+import { LocalStorageItem } from "../types/entities";
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;

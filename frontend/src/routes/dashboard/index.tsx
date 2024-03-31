@@ -1,12 +1,12 @@
-import { h, FunctionalComponent } from "preact";
 import { route } from "preact-router";
+import { h, FunctionalComponent } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import { sleep } from "../../utils";
 import ProjectSettings from "./ProjectSettings";
 import { useAuth } from "../../components/AuthContext";
 import OrganizationSettings from "./OrganizationSettings";
-import { ExtendedOrganization, Project } from "../../types";
+import { ExtendedOrganization, Project } from "../../types/entities";
 
 import { mockedExtendedOrganization } from "../../mocks";
 

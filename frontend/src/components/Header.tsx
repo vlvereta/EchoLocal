@@ -18,18 +18,18 @@ const Header = () => {
   };
 
   return (
-    <nav
+    <header
       role="navigation"
       aria-label="main navigation"
       class="navbar has-shadow is-dark"
     >
       <div class="navbar-brand">
-        <a class="navbar-item" href="/">
+        <Link class="navbar-item" href="/">
           <i class="bi bi-globe mr-2 is-align-content-center" />
           <h1 class="is-size-4">EchoLocal</h1>
-        </a>
+        </Link>
 
-        <a
+        <Link
           role="button"
           aria-label="menu"
           aria-expanded="false"
@@ -41,7 +41,7 @@ const Header = () => {
           <span aria-hidden="true" />
           <span aria-hidden="true" />
           <span aria-hidden="true" />
-        </a>
+        </Link>
       </div>
 
       <div
@@ -49,7 +49,7 @@ const Header = () => {
         class={`navbar-menu${isMenuOpen ? " is-active" : ""}`}
       >
         {isAuthenticated && (
-          <div class="navbar-start">
+          <nav class="navbar-start">
             <Link class="navbar-item" href="/organizations">
               Organizations
             </Link>
@@ -59,22 +59,22 @@ const Header = () => {
             <Link class="navbar-item" href="/profile">
               Profile
             </Link>
-          </div>
+          </nav>
         )}
 
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="buttons">
               {isAuthenticated ? (
-                <Link class="button is-primary" onClick={handleSignOut}>
+                <button class="button is-light" onClick={handleSignOut}>
                   Sign out
-                </Link>
+                </button>
               ) : (
                 <>
                   <Link class="button is-light" href="/signin">
                     Sign in
                   </Link>
-                  <Link class="button is-primary" href="/signup">
+                  <Link class="button is-light" href="/signup">
                     Sign up
                   </Link>
                 </>
@@ -83,7 +83,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

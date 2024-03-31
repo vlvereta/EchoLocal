@@ -12,18 +12,6 @@ export interface ExtendedOrganization extends Organization {
   projects: ExtendedProject[];
 }
 
-export interface GetOrganizationPayload {
-  id: Organization["id"];
-}
-
-export interface CreateOrganizationPayload {
-  name: Organization["name"];
-}
-
-export interface DeleteOrganizationPayload {
-  id: Organization["id"];
-}
-
 export interface Project {
   id: string;
   name: string;

@@ -3,8 +3,8 @@ import { route } from "preact-router";
 import { useState } from "preact/hooks";
 
 import { useAuth } from "../../components/AuthContext";
-import { CreateOrganizationPayload } from "../../types";
 import { createOrganization } from "../../api/organizations";
+import { CreateOrganizationPayload } from "../../types/requests";
 
 const CreateOrganization = () => {
   const { token } = useAuth();
