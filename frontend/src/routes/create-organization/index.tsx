@@ -1,4 +1,4 @@
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { route } from "preact-router";
 import { useState } from "preact/hooks";
 
@@ -27,10 +27,10 @@ const CreateOrganization = () => {
     setIsLoading(true);
 
     try {
-      const response = await createOrganization(token, formData);
+      const organization = await createOrganization(token, formData);
 
-      if (response?.id) {
-        route(`/dashboard/${response.id}`);
+      if (organization?.id) {
+        route(`/dashboard/${organization.id}`);
       } else {
         route("/organizations");
       }
@@ -43,41 +43,43 @@ const CreateOrganization = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="container mt-5">
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Organization name
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
-        {isError && (
-          <div class="alert alert-danger" role="alert">
-            There's an error while creating organization.
+    <main class="section is-medium">
+      <div class="columns is-centered">
+        <form onSubmit={handleSubmit} class="box column is-half">
+          <div class="field">
+            <label htmlFor="name" class="label">
+              Organization name
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="text"
+                placeholder="Awesome Organization"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
           </div>
-        )}
-        <button type="submit" className="btn btn-primary" disabled={isLoading}>
-          {isLoading ? (
-            <span
-              role="status"
-              aria-hidden="true"
-              class="spinner-border spinner-border-sm"
-            />
-          ) : (
-            <span>Create</span>
+
+          {isError && (
+            <div class="notification is-danger is-light" role="alert">
+              There's an error while creating organization.
+            </div>
           )}
-        </button>
-      </form>
-    </>
+
+          <button
+            type="submit"
+            class={`button is-primary${isLoading ? " is-loading" : ""}`}
+          >
+            Create
+          </button>
+        </form>
+      </div>
+    </main>
   );
 };
 

@@ -44,92 +44,94 @@ const SignupPage = () => {
 
   return (
     <main class="section is-medium">
-      <form onSubmit={handleSubmit} class="container">
-        <div class="field">
-          <label class="label">First Name</label>
-          <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="Alan"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-            />
+      <div class="columns is-centered">
+        <form onSubmit={handleSubmit} class="box column is-half">
+          <div class="field">
+            <label class="label">First Name</label>
+            <div class="control">
+              <input
+                class="input"
+                type="text"
+                placeholder="Alan"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label class="label">Last Name</label>
-          <div class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="Wake"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-            />
+          <div class="field">
+            <label class="label">Last Name</label>
+            <div class="control">
+              <input
+                class="input"
+                type="text"
+                placeholder="Wake"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label htmlFor="email" class="label">
-            Email
-          </label>
-          <div class="control">
-            <input
-              class="input"
-              type="email"
-              placeholder="alan.wake@email.com"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+          <div class="field">
+            <label htmlFor="email" class="label">
+              Email
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="email"
+                placeholder="alan.wake@email.com"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label htmlFor="password" class="label">
-            Password
-          </label>
-          <div class="control">
-            <input
-              class="input"
-              type="password"
-              placeholder="********"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+          <div class="field">
+            <label htmlFor="password" class="label">
+              Password
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="password"
+                placeholder="********"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label htmlFor="confirmPassword" class="label">
-            Confirm Password
-          </label>
-          <div class="control">
-            <input
-              class="input"
-              type="password"
-              placeholder="********"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
+          <div class="field">
+            <label htmlFor="confirmPassword" class="label">
+              Confirm Password
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="password"
+                placeholder="********"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <button type="submit" class="button is-primary">
-          Sign Up
-        </button>
-      </form>
+          <button type="submit" class="button is-primary">
+            Sign Up
+          </button>
+        </form>
+      </div>
     </main>
   );
 };

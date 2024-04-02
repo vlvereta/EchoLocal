@@ -13,89 +13,78 @@ const Organizations = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
 
-  const fetchOrganizations = useCallback(() => {
+  const fetchOrganizations = useCallback(async () => {
     setIsError(false);
     setIsLoading(true);
 
-    getOrganizations(token)
-      .then((data) => {
-        setOrganizations(data);
-      })
-      .catch((error) => {
-        setIsError(true);
-        console.error("Error while fetching organizations.", error);
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      const organizations = await getOrganizations(token);
+      setOrganizations(organizations);
+    } catch (error) {
+      setIsError(true);
+      console.error("Error while fetching organizations:", error);
+    }
+
+    setIsLoading(false);
   }, [token]);
 
   useEffect(() => {
     fetchOrganizations();
+    return () => setOrganizations([]);
   }, [fetchOrganizations]);
 
-  if (isLoading) {
-    return (
-      <div class="spinner-border text-secondary" role="status">
-        <span class="sr-only" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div class="alert alert-danger" role="alert">
-        There's an error while fetching organizations. Please,{" "}
-        <a
-          as="button"
-          class="alert-link"
-          onClick={fetchOrganizations}
-          style={{ cursor: "pointer" }}
-        >
-          retry
-        </a>{" "}
-        or try later.
-      </div>
-    );
-  }
-
-  if (!organizations.length) {
-    return (
-      <div class="d-flex flex-column align-items-center gap-2">
-        <h2 class="text-center">Welcome on board ;)</h2>
-        <h3 class="text-center">
-          To start with, create your first organization
-        </h3>
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          onClick={() => route("/create-organization")}
-        >
-          {"Create organization ->"}
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div class="d-flex flex-column w-50 gap-2">
-      <h2 class="text-center">Select organization</h2>
-      {organizations.map((org, i) => (
-        <button
-          type="button"
-          key={`${org.id}_${i}`}
-          onClick={() => route(`/dashboard/${org.id}`)}
-          class="btn btn-outline-secondary btn-block"
-        >
-          {org.name}
-        </button>
-      ))}
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-block"
-        onClick={() => route("/create-organization")}
-      >
-        Create new
-      </button>
-    </div>
+    <main class="section is-medium">
+      <div class="columns is-centered">
+        <div class="column is-one-third box">
+          <h2 class="block has-text-centered has-text-weight-bold is-size-3">
+            Select organization
+          </h2>
+          <div class="buttons is-flex is-flex-direction-column">
+            {isLoading && (
+              <button type="button" class="button is-fullwidth is-loading">
+                ORGANIZATION
+              </button>
+            )}
+
+            {isError && (
+              <div class="notification is-danger is-light mt-1" role="alert">
+                There's an error while fetching organizations. Please,{" "}
+                <a
+                  as="button"
+                  onClick={fetchOrganizations}
+                  style={{ cursor: "pointer" }}
+                >
+                  retry
+                </a>{" "}
+                or try later.
+              </div>
+            )}
+
+            {!isLoading &&
+              !isError &&
+              organizations.map((org, i) => (
+                <button
+                  type="button"
+                  key={`${org.id}_${i}`}
+                  class="button is-fullwidth"
+                  onClick={() => route(`/organizations/${org.id}`)}
+                >
+                  {org.name}
+                </button>
+              ))}
+
+            <button
+              type="button"
+              class="button is-fullwidth is-primary"
+              onClick={() => route("/organizations/create")}
+            >
+              Create new
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 };
 

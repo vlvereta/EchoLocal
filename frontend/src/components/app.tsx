@@ -21,12 +21,17 @@ const App = () => {
         <Route path="/" component={Home} />
         <Route path="/signin" component={SigninPage} />
         <Route path="/signup" component={SignupPage} />
-        <ProtectedRoute path="/organizations" component={Organizations} />
-        <ProtectedRoute path="/profile" component={Profile} user="me" />
+        <ProtectedRoute exact path="/organizations" component={Organizations} />
         <ProtectedRoute
-          path="/create-organization"
+          exact
+          path="/organizations/create"
           component={CreateOrganization}
         />
+        <ProtectedRoute
+          path="/organizations/:organizationId"
+          component={() => <h2>Organization!!!</h2>}
+        />
+        <ProtectedRoute path="/profile" component={Profile} user="me" />
         <ProtectedRoute
           path="/dashboard/:organizationId/:projectId?"
           component={Dashboard}
