@@ -4,7 +4,7 @@ metadata:
   name: echolocal-app
   namespace: echolocal
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: echolocal-app
@@ -15,6 +15,13 @@ spec:
     spec:
       containers:
       - name: echolocal
+        resources:
+          limits:
+            cpu: 2m
+            memory: 0.5Gi
+          requests:
+            cpu: 2m
+            memory: 0.5Gi
         image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG
         ports:
         - containerPort: 8000
