@@ -13,6 +13,7 @@ organizationsRouter.get("/", verifyAuth, async (req, res) => {
   try {
     const query = `SELECT * FROM organizations WHERE owner_id = $1;`;
     const { rows } = await pool.query(query, [user.id]);
+
     res.status(200).json(rows);
   } catch (error) {
     console.error("Error querying the database:", error);

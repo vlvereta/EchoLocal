@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
-import { h, FunctionalComponent } from "preact";
+import { h, Fragment, FunctionalComponent } from "preact";
 
 import { useAuth } from "../../components/AuthContext";
 import { getOrganization } from "../../api/organizations";
@@ -39,24 +39,26 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
   if (isLoading) {
     return (
-      <div class="spinner-border text-secondary" role="status">
-        <span class="sr-only" />
-      </div>
+      <main class="section is-medium">
+        <progress class="progress is-small is-dark" max="100">
+          50%
+        </progress>
+      </main>
     );
   }
 
   return (
     <main class="section">
       <div class="columns">
-        <div class="column is-one-quarter">
-          <div class="block level">
-            <div class="level-left">
-              <div class="level-item">
-                <h2 class="has-text-weight-bold">{name}</h2>
+        <div class="column is-one-quarter is-desktop">
+          <div class="columns is-justify-content-space-between is-vcentered is-mobile">
+            <div class="column is-9 pr-0">
+              <div class="is-text-overflow">
+                <span class="has-text-weight-bold">{name + name + name}</span>
               </div>
             </div>
-            <div class="level-right">
-              <div class="level-item">
+            {organization && (
+              <div class="column is-narrow">
                 <button
                   class={`button is-small${
                     isOrgSettingsOpen ? " is-active" : ""
@@ -68,7 +70,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
                   </span>
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
         <div class="column">
@@ -79,7 +81,11 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
             />
           )}
           {!isOrgSettingsOpen && (
-            <h2>Main Content!</h2>
+            <>
+              <h2 class="subtitle has-text-weight-bold">MAIN Content!</h2>
+              <h2 class="subtitle has-text-weight-bold">MORE Content!</h2>
+              <h2 class="subtitle has-text-weight-bold">EVEN MORE Content!</h2>
+            </>
           )}
         </div>
       </div>

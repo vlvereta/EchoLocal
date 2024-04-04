@@ -1,4 +1,4 @@
-import { FunctionalComponent, h, Fragment } from "preact";
+import { FunctionalComponent, h } from "preact";
 import { route } from "preact-router";
 
 import { useAuth } from "../../components/AuthContext";
@@ -25,13 +25,21 @@ const OrganizationSettings: FunctionalComponent<OrganizationSettingsProps> = ({
   };
 
   return (
-    <>
-      <h2>Organization Settings</h2>
-      <button type="button" class="btn btn-danger" onClick={handleOrgDelete}>
-        DELETE
-      </button>
-      <button onClick={onClose}>CLOSE</button>
-    </>
+    <div>
+      <h2 class="subtitle has-text-weight-bold">Organization Settings</h2>
+      <div class="buttons">
+        <button
+          type="button"
+          class="button is-danger"
+          onClick={handleOrgDelete}
+        >
+          DELETE
+        </button>
+        <button type="button" class="button" onClick={onClose}>
+          CLOSE
+        </button>
+      </div>
+    </div>
   );
 };
 
