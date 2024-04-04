@@ -4,20 +4,15 @@ import HealthCheck from "../../components/HealthCheck";
 
 const Home = () => {
   return (
-    <div>
-      <h2>WORK IN PROGRESS</h2>
-      <section
-        style={{
-          display: "flex",
-          textAlign: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: "3rem",
-        }}
-      >
+    <main class="section is-medium">
+      <div class="is-flex-direction-column">
+        <h2 class="has-text-centered has-text-weight-bold is-size-3">
+          WORK IN PROGRESS
+        </h2>
+        <progress class="progress is-small is-dark" max="100">50%</progress>
         <HealthCheck />
-      </section>
-    </div>
+      </div>
+    </main>
   );
 };
 

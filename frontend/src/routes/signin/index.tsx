@@ -2,87 +2,83 @@ import { h } from "preact";
 import { route } from "preact-router";
 import { useEffect, useState } from "preact/hooks";
 
-import { apiURL } from "../..";
+import { signin } from "../../api/signin";
+import { SigninPayload } from "../../types/requests";
 import { useAuth } from "../../components/AuthContext";
 
 const SigninPage = () => {
   const { isAuthenticated, setToken } = useAuth();
 
   useEffect(() => {
-    isAuthenticated && route("dashboard", true);
+    isAuthenticated && route("organizations", true);
   }, [isAuthenticated]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SigninPayload>({
     email: "",
     password: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (event) => {
+    const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     try {
-      const response = await fetch(`${apiURL}/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      if (response.ok) {
-        const { token } = await response.json();
-        setToken(token);
-        route("dashboard");
-      } else {
-        alert("Failed to log in.");
-      }
+      const { token } = await signin(formData);
+      setToken(token);
+      route("organizations");
     } catch (error) {
       console.error("Error during sign in:", error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="container mt-5">
-      <div className="mb-3">
-        <label htmlFor="email" className="form-label">
-          Email
-        </label>
-        <input
-          type="email"
-          className="form-control"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+    <main class="section is-medium">
+      <div class="columns is-centered">
+        <form onSubmit={handleSubmit} class="box column is-half">
+          <div class="field">
+            <label htmlFor="email" class="label">
+              Email
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="email"
+                placeholder="alan.wake@email.com"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label htmlFor="password" class="label">
+              Password
+            </label>
+            <div class="control">
+              <input
+                class="input"
+                type="password"
+                placeholder="********"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          <button type="submit" class="button is-primary">
+            Sign In
+          </button>
+        </form>
       </div>
-      <div className="mb-3">
-        <label htmlFor="password" className="form-label">
-          Password
-        </label>
-        <input
-          type="password"
-          className="form-control"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <button type="submit" className="btn btn-primary">
-        Sign In
-      </button>
-    </form>
+    </main>
   );
 };
 

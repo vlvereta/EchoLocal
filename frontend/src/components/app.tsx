@@ -1,46 +1,38 @@
 import { h } from "preact";
 import { Route, Router } from "preact-router";
 
-import Header from "./header";
-
-// Code-splitting is automated for `routes` directory
-import Home from "../routes/home";
-import Profile from "../routes/profile";
-import Dashboard from "../routes/dashboard";
-import SignupPage from "../routes/signup";
-import SigninPage from "../routes/signin";
+import Header from "./Header";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthContextProvider } from "./AuthContext";
 
-const BackgroundImage = () => (
-  <i
-    class="bi bi-globe"
-    style={{
-      top: "5%",
-      zIndex: 0,
-      color: "#f1f1f1",
-      fontSize: "80vw",
-      position: "absolute",
-    }}
-  />
-);
+import Home from "../routes/home";
+import Profile from "../routes/profile";
+import SignupPage from "../routes/signup";
+import SigninPage from "../routes/signin";
+import Dashboard from "../routes/dashboard";
+import Organizations from "../routes/organizations";
+import CreateOrganization from "../routes/create-organization";
 
 const App = () => {
   return (
     <AuthContextProvider>
-      <div id="app">
-        <Header />
-        <main>
-          {/* <BackgroundImage /> */}
-          <Router>
-            <Route path="/" component={Home} />
-            <Route path="/signin" component={SigninPage} />
-            <Route path="/signup" component={SignupPage} />
-            <ProtectedRoute path="/dashboard" component={Dashboard} />
-            <ProtectedRoute path="/profile" component={Profile} user="me" />
-          </Router>
-        </main>
-      </div>
+      <Header />
+      <Router>
+        <Route path="/" component={Home} />
+        <Route path="/signin" component={SigninPage} />
+        <Route path="/signup" component={SignupPage} />
+        <ProtectedRoute exact path="/organizations" component={Organizations} />
+        <ProtectedRoute
+          exact
+          path="/organizations/create"
+          component={CreateOrganization}
+        />
+        <ProtectedRoute
+          path="/organizations/:organizationId"
+          component={Dashboard}
+        />
+        <ProtectedRoute path="/profile" component={Profile} user="me" />
+      </Router>
     </AuthContextProvider>
   );
 };
