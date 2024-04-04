@@ -30,7 +30,7 @@ const CreateOrganization = () => {
       const organization = await createOrganization(token, formData);
 
       if (organization?.id) {
-        route(`/dashboard/${organization.id}`);
+        route(`/organizations/${organization.id}`);
       } else {
         route("/organizations");
       }

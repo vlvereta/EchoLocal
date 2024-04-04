@@ -53,9 +53,6 @@ const Header = () => {
             <Link class="navbar-item" href="/organizations">
               Organizations
             </Link>
-            {/* <Link class="navbar-item" href="/dashboard">
-              Dashboard
-            </Link> */}
             <Link class="navbar-item" href="/profile">
               Profile
             </Link>

@@ -1,6 +1,7 @@
 import express from "express";
 import { verifyAuth } from "../middlewares/verifyAuth";
 import { pool } from "..";
+import { mockedExtendedOrganization } from "../mocks";
 
 export const organizationsRouter = express.Router();
 
@@ -13,6 +14,34 @@ organizationsRouter.get("/", verifyAuth, async (req, res) => {
     const query = `SELECT * FROM organizations WHERE owner_id = $1;`;
     const { rows } = await pool.query(query, [user.id]);
     res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error querying the database:", error);
+    res.status(500).send("Server error");
+  }
+});
+
+// Get organization by id
+organizationsRouter.get("/:organization_id", verifyAuth, async (req, res) => {
+  // @ts-ignore
+  const { user } = req;
+  const { organization_id } = req.params;
+
+  try {
+    const query = `SELECT * FROM organizations WHERE id = $1;`;
+    const { rows } = await pool.query(query, [organization_id]);
+
+    // Populate organization by mocked fields until there's no extended data
+    const organization = {
+      ...mockedExtendedOrganization,
+      ...rows[0],
+    };
+
+    // Verify ability to get organization by owner
+    if (organization.owner_id === user.id) {
+      res.status(200).json(organization);
+    } else {
+      res.status(403).send("Not authorized");
+    }
   } catch (error) {
     console.error("Error querying the database:", error);
     res.status(500).send("Server error");

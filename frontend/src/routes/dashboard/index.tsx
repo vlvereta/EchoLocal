@@ -1,74 +1,41 @@
-import { route } from "preact-router";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import { h, FunctionalComponent } from "preact";
-import { useEffect, useState } from "preact/hooks";
 
-import { sleep } from "../../utils";
-import ProjectSettings from "./ProjectSettings";
 import { useAuth } from "../../components/AuthContext";
+import { getOrganization } from "../../api/organizations";
+import { ExtendedOrganization } from "../../types/entities";
 import OrganizationSettings from "./OrganizationSettings";
-import { ExtendedOrganization, Project } from "../../types/entities";
-
-import { mockedExtendedOrganization } from "../../mocks";
 
 interface DashboardProps {
   organizationId: string;
-  projectId: string;
 }
 
-const Dashboard: FunctionalComponent<DashboardProps> = ({
-  organizationId,
-  projectId,
-}) => {
+const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const { token } = useAuth();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState<boolean>(false);
-  const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
-    useState<boolean>(false);
 
-  const [organization, setOrganization] = useState<ExtendedOrganization>();
-  const { name, projects = [] } = organization ?? {};
+  const [organization, setOrganization] = useState<ExtendedOrganization>(null);
+  const { name } = organization ?? {};
 
-  const [project, setProject] = useState<Project>();
-
-  useEffect(() => {
+  const fetchOrganization = useCallback(async () => {
     setIsLoading(true);
 
-    sleep(1000)
-      .then(() => setOrganization(mockedExtendedOrganization))
-      .finally(() => setIsLoading(false));
+    try {
+      const organization = await getOrganization(token, { id: organizationId });
+      setOrganization(organization);
+    } catch (error) {
+      console.error("Error while fetching organization:", error);
+    }
 
-    // getOrganization(token, { id: organizationId })
-    //   .then((data) => setOrganization(data))
-    //   .catch((error) => console.error(error))
-    //   .finally(() => setIsLoading(false));
+    setIsLoading(false);
   }, [token, organizationId]);
 
   useEffect(() => {
-    if (projects.length) {
-      if (projectId) {
-        const selectedProject = projects.find(({ id }) => projectId === id);
-
-        if (selectedProject) {
-          setProject(selectedProject);
-        } else {
-          route(`/dashboard/${organizationId}`);
-        }
-      } else {
-        route(`/dashboard/${organizationId}/${projects[0].id}`);
-      }
-    }
-  }, [projects, projectId, organizationId]);
-
-  const handleProjectSelect = (e) => {
-    if (!e.target.value) {
-      console.log("Create new project!");
-    }
-
-    const selectedProject = projects.find(({ id }) => e.target.value === id);
-    selectedProject &&
-      route(`/dashboard/${organizationId}/${selectedProject.id}`);
-  };
+    fetchOrganization();
+    return () => setOrganization(null);
+  }, [fetchOrganization]);
 
   if (isLoading) {
     return (
@@ -79,74 +46,44 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({
   }
 
   return (
-    <div className="container-fluid p-0 full-height">
-      <div className="row no-gutters full-height">
-        <div className="col-3 sidebar">
-          <div class="d-flex align-items-center gap-2 justify-content-between flex-wrap">
-            <span>
-              <strong>{name}</strong>
-            </span>
-            <div class="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                class="btn btn-light btn-sm"
-                onClick={() => route("/organizations")}
-              >
-                <i class="bi bi-arrow-repeat" />
-              </button>
-              <button
-                type="button"
-                class={`btn btn-light btn-sm ${
-                  isOrgSettingsOpen ? "active" : ""
-                }`}
-                onClick={() => setIsOrgSettingsOpen(!isOrgSettingsOpen)}
-              >
-                <i class="bi bi-gear" />
-              </button>
+    <main class="section">
+      <div class="columns">
+        <div class="column is-one-quarter">
+          <div class="block level">
+            <div class="level-left">
+              <div class="level-item">
+                <h2 class="has-text-weight-bold">{name}</h2>
+              </div>
+            </div>
+            <div class="level-right">
+              <div class="level-item">
+                <button
+                  class={`button is-small${
+                    isOrgSettingsOpen ? " is-active" : ""
+                  }`}
+                  onClick={() => setIsOrgSettingsOpen(!isOrgSettingsOpen)}
+                >
+                  <span class="icon is-small">
+                    <i class="bi bi-gear" />
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="mt-3 d-flex align-items-center gap-2 justify-content-between">
-            <select
-              class="form-select"
-              value={project?.id}
-              onChange={handleProjectSelect}
-              aria-label="Default select example"
-            >
-              <option value="">New project</option>
-              {projects.map(({ id, name }, i) => (
-                <option key={`${id}_${i}`} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              class={`btn btn-light btn-sm ${
-                isProjectSettingsOpen ? "active" : ""
-              }`}
-              onClick={() => setIsProjectSettingsOpen(!isProjectSettingsOpen)}
-            >
-              <i class="bi bi-gear" />
-            </button>
-          </div>
         </div>
-
-        <div className="col-9 content-area">
+        <div class="column">
           {isOrgSettingsOpen && (
             <OrganizationSettings
               organizationId={organizationId}
               onClose={() => setIsOrgSettingsOpen(false)}
             />
           )}
-          {!isOrgSettingsOpen && isProjectSettingsOpen && (
-            <ProjectSettings onClose={() => setIsProjectSettingsOpen(false)} />
-          )}
-          {!isOrgSettingsOpen && !isProjectSettingsOpen && (
-            <h2>Main Content</h2>
+          {!isOrgSettingsOpen && (
+            <h2>Main Content!</h2>
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

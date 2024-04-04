@@ -29,13 +29,9 @@ const App = () => {
         />
         <ProtectedRoute
           path="/organizations/:organizationId"
-          component={() => <h2>Organization!!!</h2>}
-        />
-        <ProtectedRoute path="/profile" component={Profile} user="me" />
-        <ProtectedRoute
-          path="/dashboard/:organizationId/:projectId?"
           component={Dashboard}
         />
+        <ProtectedRoute path="/profile" component={Profile} user="me" />
       </Router>
     </AuthContextProvider>
   );
