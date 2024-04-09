@@ -100,3 +100,66 @@ organizationsRouter.delete(
     }
   }
 );
+
+// Get organization projects
+organizationsRouter.get(
+  "/:organization_id/projects",
+  verifyAuth,
+  async (req, res) => {
+    // @ts-ignore
+    const { user } = req;
+    const { organization_id } = req.params;
+
+    try {
+      const { rows: organizations } = await pool.query(
+        `SELECT * FROM organizations WHERE id = $1`,
+        [organization_id]
+      );
+
+      if (organizations?.[0].owner_id === user.id) {
+        const query = `SELECT * FROM projects WHERE org_id = $1`;
+        const { rows: projects } = await pool.query(query, [organization_id]);
+        res.status(200).json(projects);
+      } else {
+        res.status(403).send("Not authorized");
+      }
+    } catch (error) {
+      console.error("Error querying the database:", error);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+// Create new project in organization
+organizationsRouter.post(
+  "/:organization_id/projects",
+  verifyAuth,
+  async (req, res) => {
+    // @ts-ignore
+    const { user } = req;
+    const { organization_id } = req.params;
+    const { name, description } = req.body;
+
+    try {
+      const { rows: organizations } = await pool.query(
+        `SELECT * FROM organizations WHERE id = $1`,
+        [organization_id]
+      );
+
+      if (organizations?.[0].owner_id === user.id) {
+        const query = `INSERT INTO projects (name, description, org_id) VALUES ($1, $2, $3) RETURNING *`;
+        const { rows: projects } = await pool.query(query, [
+          name,
+          description,
+          organization_id,
+        ]);
+        res.status(201).json(projects?.[0]);
+      } else {
+        res.status(403).send("Not authorized");
+      }
+    } catch (error) {
+      console.error("Error querying the database:", error);
+      res.status(500).send("Server error");
+    }
+  }
+);

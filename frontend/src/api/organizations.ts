@@ -1,7 +1,8 @@
 import { apiURL } from "../index";
-import { ExtendedOrganization, Organization } from "../types/entities";
+import { ExtendedOrganization, Organization, Project } from "../types/entities";
 import {
   CreateOrganizationPayload,
+  CreateProjectPayload,
   DeleteOrganizationPayload,
   GetOrganizationPayload,
 } from "../types/requests";
@@ -54,4 +55,38 @@ export const deleteOrganization = async (
       authorization: `Bearer ${token}`,
     },
   });
+};
+
+export const getOrganizationProjects = async (
+  token: string,
+  organizationId: string
+): Promise<Project[]> => {
+  const response = await fetch(
+    `${apiURL}/organizations/${organizationId}/projects`,
+    {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.json();
+};
+
+export const createOrganizationProject = async (
+  token: string,
+  organizationId: string,
+  payload: CreateProjectPayload
+): Promise<Project> => {
+  const response = await fetch(
+    `${apiURL}/organizations/${organizationId}/projects`,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+  return response.json();
 };

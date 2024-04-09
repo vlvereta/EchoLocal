@@ -1,4 +1,4 @@
-import { Organization } from "./entities";
+import { Organization, Project } from "./entities";
 
 export interface SignupPayload {
   firstName: string;
@@ -28,3 +28,5 @@ export interface CreateOrganizationPayload {
 export interface DeleteOrganizationPayload {
   id: Organization["id"];
 }
+
+export type CreateProjectPayload = Pick<Project, "name" | "description">;

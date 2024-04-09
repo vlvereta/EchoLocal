@@ -7,6 +7,7 @@ import { Secret } from "jsonwebtoken";
 import { router as signinRouter } from "./routes/signin";
 import { usersRouter } from "./routes/users";
 import { organizationsRouter } from "./routes/organizations";
+import { projectsRouter } from "./routes/projects";
 
 // Configure dotenv to load the .env file from the parent directory
 dotenv.config({ path: "../.env" });
@@ -38,6 +39,7 @@ app.get("/api/health", (req, res) =>
 app.use("/api/signin", signinRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/organizations", organizationsRouter);
+app.use("/api/projects", projectsRouter);
 
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);
