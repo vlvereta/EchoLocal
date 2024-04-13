@@ -10,7 +10,8 @@ import {
 import OrganizationSettings from "./OrganizationSettings";
 import { ExtendedOrganization, Project } from "../../types/entities";
 import ProjectSettings from "./ProjectSettings";
-import { CreateProjectPayload } from "src/types/requests";
+import { CreateProjectPayload } from "../../types/requests";
+import CreateProjectModal from "../../components/CreateProjectModal";
 
 interface DashboardProps {
   organizationId: string;
@@ -30,24 +31,13 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isCreateProjectOpen, setIsCreateProjectOpen] =
     useState<boolean>(false);
-  const [formData, setFormData] = useState<CreateProjectPayload>({
-    name: "",
-    description: "",
-  });
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleCreateProject = async (payload: CreateProjectPayload) => {
     try {
       const project = await createOrganizationProject(
         token,
         organizationId,
-        formData
+        payload
       );
 
       if (project?.id) {
@@ -127,40 +117,35 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
               </div>
             )}
           </div>
+          <div class="columns is-justify-content-space-between is-vcentered is-mobile">
+            <div class="column is-9 pr-0">
+              <div class="select">
+                <select>
+                  {projects.map((project, i) => (
+                    <option key={`${project.id}_${i}`}>{project.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div class="column is-narrow">
+              <button
+                class={`button is-small${
+                  isProjectSettingsOpen ? " is-active" : ""
+                }`}
+                onClick={() => setIsProjectSettingsOpen(!isProjectSettingsOpen)}
+              >
+                <span class="icon is-small">
+                  <i class="bi bi-gear" />
+                </span>
+              </button>
+            </div>
+          </div>
           <button
-            class="button is-primary"
+            class="button is-fullwidth"
             onClick={() => setIsCreateProjectOpen(true)}
           >
             CREATE PROJECT
           </button>
-          {projects.map((project, i) => (
-            <div
-              key={`${project.id}_${i}`}
-              class="columns is-justify-content-space-between is-vcentered is-mobile"
-            >
-              <div class="column is-9 pr-0">
-                <div class="is-text-overflow">
-                  <span class="has-text-weight-bold">{project.name}</span>
-                </div>
-              </div>
-              {organization && (
-                <div class="column is-narrow">
-                  <button
-                    class={`button is-small${
-                      isProjectSettingsOpen ? " is-active" : ""
-                    }`}
-                    onClick={() =>
-                      setIsProjectSettingsOpen(!isProjectSettingsOpen)
-                    }
-                  >
-                    <span class="icon is-small">
-                      <i class="bi bi-gear" />
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
         </div>
         <div class="column">
           {isOrgSettingsOpen && (
@@ -181,59 +166,13 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
         </div>
       </div>
-      <div class={`modal${isCreateProjectOpen ? " is-active" : ""}`}>
-        <div class="modal-background" />
-        <div class="modal-content">
-          <form onSubmit={handleSubmit} class="box">
-            <div class="field">
-              <label htmlFor="name" class="label">
-                Create new project
-              </label>
-              <div class="control">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Project 1"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
 
-            <div class="field">
-              <label htmlFor="name" class="label">
-                Description
-              </label>
-              <div class="control">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Bla-bla-bla..."
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <button type="submit" class="button is-primary">
-              Create
-            </button>
-          </form>
-        </div>
-        <button
-          class="modal-close is-large"
-          aria-label="close"
-          onClick={() => setIsCreateProjectOpen(false)}
-        />
-      </div>
+      <CreateProjectModal
+        open={isCreateProjectOpen}
+        isLoading={isLoading}
+        onSubmit={handleCreateProject}
+        onClose={() => setIsCreateProjectOpen(false)}
+      />
     </main>
   );
 };
