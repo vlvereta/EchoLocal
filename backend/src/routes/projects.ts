@@ -5,7 +5,7 @@ import { pool } from "..";
 export const projectsRouter = express.Router();
 
 // Delete project
-projectsRouter.post("/:project_id", verifyAuth, async (req, res) => {
+projectsRouter.delete("/:project_id", verifyAuth, async (req, res) => {
   // @ts-ignore
   const { user } = req;
   const { project_id } = req.params;

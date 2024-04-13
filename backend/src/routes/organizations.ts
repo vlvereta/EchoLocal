@@ -28,17 +28,21 @@ organizationsRouter.get("/:organization_id", verifyAuth, async (req, res) => {
   const { organization_id } = req.params;
 
   try {
-    const query = `SELECT * FROM organizations WHERE id = $1;`;
-    const { rows } = await pool.query(query, [organization_id]);
+    const { rows: organizations } = await pool.query(
+      `SELECT * FROM organizations WHERE id = $1`,
+      [organization_id]
+    );
 
     // Populate organization by mocked fields until there's no extended data
     const organization = {
       ...mockedExtendedOrganization,
-      ...rows[0],
+      ...organizations[0],
     };
 
-    // Verify ability to get organization by owner
     if (organization.owner_id === user.id) {
+      const query = `SELECT * FROM projects WHERE org_id = $1`;
+      const { rows: projects } = await pool.query(query, [organization_id]);
+      organization.projects = projects;
       res.status(200).json(organization);
     } else {
       res.status(403).send("Not authorized");
