@@ -24,4 +24,14 @@ export interface ExtendedProject extends Project {
 
 export interface TranslationSheet {
   id: string;
+  language: string;
+  projectId: string;
+  lastUpdated: string;
+}
+
+export interface TranslationKey {
+  id: string;
+  sheetId: string;
+  key: string;
+  value: string;
 }

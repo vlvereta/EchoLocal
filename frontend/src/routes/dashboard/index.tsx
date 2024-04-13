@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
-import { h, Fragment, FunctionalComponent } from "preact";
+import { h, FunctionalComponent } from "preact";
 
 import {
   createOrganizationProject,
   getOrganization,
 } from "../../api/organizations";
 import ProjectSettings from "./ProjectSettings";
+import MainContentBlock from "./MainContentBlock";
 import { deleteProject } from "../../api/projects";
 import { useAuth } from "../../components/AuthContext";
 import OrganizationSettings from "./OrganizationSettings";
-import { ExtendedOrganization } from "../../types/entities";
 import { CreateProjectPayload } from "../../types/requests";
+import { getExtendedProjectFromOrganization } from "../../utils";
 import CreateProjectModal from "../../components/CreateProjectModal";
+import { ExtendedOrganization, ExtendedProject } from "../../types/entities";
+
+import { mockedExtendedOrganization } from "../../mocks";
 
 interface DashboardProps {
   organizationId: string;
@@ -23,22 +27,31 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState<boolean>(false);
 
-  const [organization, setOrganization] = useState<ExtendedOrganization>(null);
-  const { name, projects } = organization ?? {};
+  const [extendedOrganization, setExtendedOrganization] =
+    useState<ExtendedOrganization>(null);
+  const { name, projects } = extendedOrganization ?? {};
 
   const [isCreateProjectOpen, setIsCreateProjectOpen] =
     useState<boolean>(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
     useState<boolean>(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>();
+  const [selectedExtendedProject, setSelectedExtendedProject] =
+    useState<ExtendedProject>();
 
   const fetchOrganization = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const organization = await getOrganization(token, { id: organizationId });
-      setOrganization(organization);
-      setSelectedProjectId(organization?.projects?.[0]?.id);
+      /* const organization =  */ await getOrganization(token, {
+        id: organizationId,
+      });
+      // setOrganization(organization);
+
+      setExtendedOrganization(mockedExtendedOrganization);
+
+      // Extended organization keeps extended projects
+      setSelectedExtendedProject(mockedExtendedOrganization?.projects?.[0]);
+      // setSelectedExtendedProject(organization?.projects?.[0]);
     } catch (error) {
       console.error("Error while fetching organization:", error);
     }
@@ -57,7 +70,12 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
       if (project?.id) {
         setIsCreateProjectOpen(false);
         await fetchOrganization();
-        setSelectedProjectId(project.id);
+
+        const extendedProject = getExtendedProjectFromOrganization(
+          extendedOrganization,
+          project.id
+        );
+        setSelectedExtendedProject(extendedProject);
       }
     } catch (error) {
       console.error("Error while creating project:", error);
@@ -77,7 +95,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
   useEffect(() => {
     fetchOrganization();
-    return () => setOrganization(null);
+    return () => setExtendedOrganization(null);
   }, [fetchOrganization]);
 
   if (isLoading) {
@@ -90,6 +108,14 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     );
   }
 
+  const handleProjectSelect = (event) => {
+    const extendedProject = getExtendedProjectFromOrganization(
+      extendedOrganization,
+      event.target.value
+    );
+    setSelectedExtendedProject(extendedProject);
+  };
+
   return (
     <main class="section">
       <div class="columns">
@@ -97,10 +123,10 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           <div class="columns is-justify-content-space-between is-vcentered is-mobile">
             <div class="column is-9 pr-0">
               <div class="is-text-overflow">
-                <h4 class="title is-4 has-text-centered">{name}</h4>
+                <span class="title is-4 has-text-centered">{name}</span>
               </div>
             </div>
-            {organization && (
+            {extendedOrganization && (
               <div class="column is-narrow">
                 <button
                   class={`button is-small${
@@ -119,17 +145,11 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
             <div class="columns is-justify-content-space-between is-vcentered is-mobile">
               <div class="column is-9 pr-0">
                 <div class="select">
-                  <select
-                    onChange={(event) =>
-                      setSelectedProjectId(
-                        (event.target as HTMLSelectElement).value
-                      )
-                    }
-                  >
+                  <select onChange={handleProjectSelect}>
                     {projects?.map((project, i) => (
                       <option
                         key={`${project.id}_${i}`}
-                        selected={project.id === selectedProjectId}
+                        selected={project.id === selectedExtendedProject?.id}
                         value={project.id}
                       >
                         {project.name}
@@ -160,6 +180,19 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           >
             CREATE PROJECT
           </button>
+          {selectedExtendedProject?.translations?.map(({ language, id }, i) => (
+            <div
+              key={`${id}_${i}`}
+              class="is-flex is-flex-direction-column my-2"
+            >
+              <a>{language}</a>
+            </div>
+          ))}
+          <div class="is-flex is-flex-direction-column my-2">
+            <a>
+              <strong>New</strong>
+            </a>
+          </div>
         </div>
         <div class="column">
           {isOrgSettingsOpen && (
@@ -170,18 +203,12 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
           {isProjectSettingsOpen && (
             <ProjectSettings
-              projectId={selectedProjectId}
+              projectId={selectedExtendedProject?.id}
               onDelete={(projectId) => handleDeleteProject(projectId)}
               onClose={() => setIsProjectSettingsOpen(false)}
             />
           )}
-          {!isOrgSettingsOpen && !isProjectSettingsOpen && (
-            <>
-              <h2 class="subtitle has-text-weight-bold">MAIN Content!</h2>
-              <h2 class="subtitle has-text-weight-bold">MORE Content!</h2>
-              <h2 class="subtitle has-text-weight-bold">EVEN MORE Content!</h2>
-            </>
-          )}
+          {!isOrgSettingsOpen && !isProjectSettingsOpen && <MainContentBlock />}
         </div>
       </div>
 
