@@ -13,8 +13,8 @@ import OrganizationSettings from "./OrganizationSettings";
 import { useTranslation } from "../../hooks/useTranslation";
 import { CreateProjectPayload } from "../../types/requests";
 import { getExtendedProjectFromOrganization } from "../../utils";
-import CreateProjectModal from "../../components/CreateProjectModal";
-import CreateTranslationModal from "../../components/CreateTranslationModal";
+import CreateProjectModal from "../../components/modals/CreateProjectModal";
+import CreateTranslationModal from "../../components/modals/CreateTranslationModal";
 import { ExtendedOrganization, ExtendedProject } from "../../types/entities";
 
 interface DashboardProps {
@@ -42,13 +42,19 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     isCreateModalOpen: isCreateTranslationOpen,
     isCreateLoading: isCreateTranslationLoading,
     onCreate: onSubmitCreateTranslation,
+    onDelete: onDeleteTranslation,
     setCreateModalOpen: setCreateTranslationOpen,
-  } = useTranslation(selectedExtendedProject?.id, (translation) =>
-    setSelectedExtendedProject({
-      ...selectedExtendedProject,
-      translations: selectedExtendedProject.translations.concat([translation]),
-    })
-  );
+  } = useTranslation({
+    projectId: selectedExtendedProject?.id,
+    onCreateSuccess: (translation) =>
+      setSelectedExtendedProject({
+        ...selectedExtendedProject,
+        translations: selectedExtendedProject.translations.concat([
+          translation,
+        ]),
+      }),
+    onDeleteSuccess: () => console.log("DELETED"),
+  });
 
   const fetchOrganization = useCallback(async () => {
     setIsLoading(true);
@@ -120,7 +126,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const handleProjectSelect = (event) => {
     const extendedProject = getExtendedProjectFromOrganization(
       extendedOrganization,
-      event.target.value
+      +event.target.value
     );
     setSelectedExtendedProject(extendedProject);
   };
@@ -217,16 +223,28 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
               onClose={() => setIsProjectSettingsOpen(false)}
             />
           )}
-          {!isOrgSettingsOpen && !isProjectSettingsOpen && <MainContentBlock />}
+          {!isOrgSettingsOpen && !isProjectSettingsOpen && selectedExtendedProject?.translations?.[0] && (
+            <MainContentBlock
+              currentTranslation={selectedExtendedProject?.translations?.[0]}
+              onDeleteTranslation={() =>
+                onDeleteTranslation(
+                  selectedExtendedProject?.translations?.[0]?.id
+                )
+              }
+            />
+          )}
+          {/* TODO: add an empty screen when no translation selected */}
         </div>
       </div>
 
-      <CreateProjectModal
-        open={isCreateProjectOpen}
-        isLoading={isLoading}
-        onSubmit={handleCreateProject}
-        onClose={() => setIsCreateProjectOpen(false)}
-      />
+      {isCreateProjectOpen && (
+        <CreateProjectModal
+          open={isCreateProjectOpen}
+          isLoading={isLoading}
+          onSubmit={handleCreateProject}
+          onClose={() => setIsCreateProjectOpen(false)}
+        />
+      )}
 
       {isCreateTranslationOpen && (
         <CreateTranslationModal

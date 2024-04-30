@@ -1,7 +1,7 @@
 import { FunctionalComponent, h } from "preact";
 import { useState } from "preact/hooks";
 
-import { CreateTranslationPayload } from "../types/requests";
+import { CreateTranslationPayload } from "../../types/requests";
 
 interface CreateTranslationModalProps {
   open: boolean;

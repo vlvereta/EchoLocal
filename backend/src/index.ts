@@ -8,6 +8,7 @@ import { router as signinRouter } from "./routes/signin";
 import { usersRouter } from "./routes/users";
 import { organizationsRouter } from "./routes/organizations";
 import { projectsRouter } from "./routes/projects";
+import { translationsRouter } from "./routes/translations";
 
 // Configure dotenv to load the .env file from the parent directory
 dotenv.config({ path: "../.env" });
@@ -40,6 +41,7 @@ app.use("/api/signin", signinRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/organizations", organizationsRouter);
 app.use("/api/projects", projectsRouter);
+app.use("/api/translations", translationsRouter);
 
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);

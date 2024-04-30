@@ -1,7 +1,7 @@
 import { FunctionalComponent, h } from "preact";
 import { useState } from "preact/hooks";
 
-import { CreateProjectPayload } from "../types/requests";
+import { CreateProjectPayload } from "../../types/requests";
 
 interface CreateProjectModalProps {
   open: boolean;

@@ -2,6 +2,7 @@ import { useState } from "preact/hooks";
 
 import { useAuth } from "../components/AuthContext";
 import { TranslationSheet } from "../types/entities";
+import { deleteTranslation } from "../api/translations";
 import { createProjectTranslation } from "../api/projects";
 import { CreateTranslationPayload } from "../types/requests";
 
@@ -13,10 +14,15 @@ interface UseTranslation {
   onDelete: (id: number) => void;
 }
 
-export const useTranslation = (
-  projectId: number,
-  onCreateSuccess: (translation: TranslationSheet) => void
-): UseTranslation => {
+export const useTranslation = ({
+  projectId,
+  onCreateSuccess,
+  onDeleteSuccess,
+}: {
+  projectId: number;
+  onCreateSuccess: (translation: TranslationSheet) => void;
+  onDeleteSuccess: () => void;
+}): UseTranslation => {
   const { token } = useAuth();
 
   const [isCreateTranslationOpen, setIsCreateTranslationOpen] =
@@ -43,8 +49,14 @@ export const useTranslation = (
     setIsCreateTranslationLoading(false);
   };
 
-  const handleDelete = (id: number) => {
-    console.log("handleDelete:", id);
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteTranslation(token, id);
+
+      onDeleteSuccess();
+    } catch (error) {
+      console.error("Error while deleting project:", error);
+    }
   };
 
   return {
