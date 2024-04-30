@@ -1,8 +1,8 @@
 import { FunctionalComponent, h } from "preact";
 
 interface ProjectSettingsProps {
-  projectId: string;
-  onDelete: (projectId: string) => void;
+  projectId: number;
+  onDelete: (projectId: number) => void;
   onClose: () => void;
 }
 

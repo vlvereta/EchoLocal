@@ -36,3 +36,58 @@ projectsRouter.delete("/:project_id", verifyAuth, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// Get project translations
+projectsRouter.get(
+  "/:project_id/translations",
+  verifyAuth,
+  async (req, res) => {
+    const { project_id } = req.params;
+
+    try {
+      const { rows: translations } = await pool.query(
+        `SELECT * FROM translations WHERE project_id = $1`,
+        [project_id]
+      );
+      res.status(200).json(translations);
+    } catch (error) {
+      console.error("Error querying the database:", error);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+// Create new translation in project
+projectsRouter.post(
+  "/:project_id/translations",
+  verifyAuth,
+  async (req, res) => {
+    // @ts-ignore
+    const { project_id } = req.params;
+    const { language } = req.body;
+
+    try {
+      const { rows: projects } = await pool.query(
+        `SELECT * FROM projects WHERE id = $1`,
+        [project_id]
+      );
+
+      // TODO: add verification that user has access
+
+      const currentProject = projects?.[0];
+      if (currentProject) {
+        const query = `INSERT INTO translations (language, project_id) VALUES ($1, $2) RETURNING *`;
+        const { rows: translations } = await pool.query(query, [
+          language,
+          project_id,
+        ]);
+        res.status(201).json(translations?.[0]);
+      } else {
+        res.status(404).send("Not found");
+      }
+    } catch (error) {
+      console.error("Error querying the database:", error);
+      res.status(500).send("Server error");
+    }
+  }
+);

@@ -10,15 +10,15 @@ import MainContentBlock from "./MainContentBlock";
 import { deleteProject } from "../../api/projects";
 import { useAuth } from "../../components/AuthContext";
 import OrganizationSettings from "./OrganizationSettings";
+import { useTranslation } from "../../hooks/useTranslation";
 import { CreateProjectPayload } from "../../types/requests";
 import { getExtendedProjectFromOrganization } from "../../utils";
 import CreateProjectModal from "../../components/CreateProjectModal";
+import CreateTranslationModal from "../../components/CreateTranslationModal";
 import { ExtendedOrganization, ExtendedProject } from "../../types/entities";
 
-import { mockedExtendedOrganization } from "../../mocks";
-
 interface DashboardProps {
-  organizationId: string;
+  organizationId: number;
 }
 
 const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
@@ -38,20 +38,29 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const [selectedExtendedProject, setSelectedExtendedProject] =
     useState<ExtendedProject>();
 
+  const {
+    isCreateModalOpen: isCreateTranslationOpen,
+    isCreateLoading: isCreateTranslationLoading,
+    onCreate: onSubmitCreateTranslation,
+    setCreateModalOpen: setCreateTranslationOpen,
+  } = useTranslation(selectedExtendedProject?.id, (translation) =>
+    setSelectedExtendedProject({
+      ...selectedExtendedProject,
+      translations: selectedExtendedProject.translations.concat([translation]),
+    })
+  );
+
   const fetchOrganization = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      /* const organization =  */ await getOrganization(token, {
+      const organization = await getOrganization(token, {
         id: organizationId,
       });
-      // setOrganization(organization);
-
-      setExtendedOrganization(mockedExtendedOrganization);
+      setExtendedOrganization(organization);
 
       // Extended organization keeps extended projects
-      setSelectedExtendedProject(mockedExtendedOrganization?.projects?.[0]);
-      // setSelectedExtendedProject(organization?.projects?.[0]);
+      setSelectedExtendedProject(organization?.projects?.[0]);
     } catch (error) {
       console.error("Error while fetching organization:", error);
     }
@@ -82,7 +91,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     }
   };
 
-  const handleDeleteProject = async (projectId: string) => {
+  const handleDeleteProject = async (projectId: number) => {
     try {
       await deleteProject(token, projectId);
 
@@ -189,7 +198,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
             </div>
           ))}
           <div class="is-flex is-flex-direction-column my-2">
-            <a>
+            <a onClick={() => setCreateTranslationOpen(true)}>
               <strong>New</strong>
             </a>
           </div>
@@ -218,6 +227,15 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
         onSubmit={handleCreateProject}
         onClose={() => setIsCreateProjectOpen(false)}
       />
+
+      {isCreateTranslationOpen && (
+        <CreateTranslationModal
+          open={isCreateTranslationOpen}
+          isLoading={isCreateTranslationLoading}
+          onSubmit={onSubmitCreateTranslation}
+          onClose={() => setCreateTranslationOpen(false)}
+        />
+      )}
     </main>
   );
 };

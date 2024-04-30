@@ -5,7 +5,7 @@ import { useAuth } from "../../components/AuthContext";
 import { deleteOrganization } from "../../api/organizations";
 
 interface OrganizationSettingsProps {
-  organizationId: string;
+  organizationId: number;
   onClose: () => void;
 }
 
