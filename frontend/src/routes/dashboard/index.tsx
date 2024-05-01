@@ -2,20 +2,20 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import { h, FunctionalComponent } from "preact";
 
 import {
-  createOrganizationProject,
-  getOrganization,
-} from "../../api/organizations";
+  ExtendedOrganization,
+  ExtendedProject,
+  Project,
+} from "../../types/entities";
 import ProjectSettings from "./ProjectSettings";
 import MainContentBlock from "./MainContentBlock";
-import { deleteProject } from "../../api/projects";
+import { useProject } from "../../hooks/useProject";
 import { useAuth } from "../../components/AuthContext";
+import { getOrganization } from "../../api/organizations";
 import OrganizationSettings from "./OrganizationSettings";
 import { useTranslation } from "../../hooks/useTranslation";
-import { CreateProjectPayload } from "../../types/requests";
 import { getExtendedProjectFromOrganization } from "../../utils";
 import CreateProjectModal from "../../components/modals/CreateProjectModal";
 import CreateTranslationModal from "../../components/modals/CreateTranslationModal";
-import { ExtendedOrganization, ExtendedProject } from "../../types/entities";
 
 interface DashboardProps {
   organizationId: number;
@@ -31,17 +31,39 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     useState<ExtendedOrganization>(null);
   const { name, projects } = extendedOrganization ?? {};
 
-  const [isCreateProjectOpen, setIsCreateProjectOpen] =
-    useState<boolean>(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
     useState<boolean>(false);
   const [selectedExtendedProject, setSelectedExtendedProject] =
     useState<ExtendedProject>();
 
   const {
+    isCreateModalOpen: isCreateProjectOpen,
+    isCreateLoading: isCreateProjectLoading,
+    isDeleteLoading: isDeleteProjectLoading,
+    onCreate: onCreateProject,
+    onDelete: onDeleteProject,
+    setCreateModalOpen: setCreateProjectOpen,
+  } = useProject({
+    organizationId,
+    onCreateSuccess: async (project: Project) => {
+      await fetchOrganization();
+
+      const extendedProject = getExtendedProjectFromOrganization(
+        extendedOrganization,
+        project.id
+      );
+      setSelectedExtendedProject(extendedProject);
+    },
+    onDeleteSuccess: async () => {
+      setIsProjectSettingsOpen(false);
+      await fetchOrganization();
+    },
+  });
+
+  const {
     isCreateModalOpen: isCreateTranslationOpen,
     isCreateLoading: isCreateTranslationLoading,
-    onCreate: onSubmitCreateTranslation,
+    onCreate: onCreateTranslation,
     onDelete: onDeleteTranslation,
     setCreateModalOpen: setCreateTranslationOpen,
   } = useTranslation({
@@ -73,40 +95,6 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
     setIsLoading(false);
   }, [token, organizationId]);
-
-  const handleCreateProject = async (payload: CreateProjectPayload) => {
-    try {
-      const project = await createOrganizationProject(
-        token,
-        organizationId,
-        payload
-      );
-
-      if (project?.id) {
-        setIsCreateProjectOpen(false);
-        await fetchOrganization();
-
-        const extendedProject = getExtendedProjectFromOrganization(
-          extendedOrganization,
-          project.id
-        );
-        setSelectedExtendedProject(extendedProject);
-      }
-    } catch (error) {
-      console.error("Error while creating project:", error);
-    }
-  };
-
-  const handleDeleteProject = async (projectId: number) => {
-    try {
-      await deleteProject(token, projectId);
-
-      setIsProjectSettingsOpen(false);
-      await fetchOrganization();
-    } catch (error) {
-      console.error("Error while deleting project:", error);
-    }
-  };
 
   useEffect(() => {
     fetchOrganization();
@@ -191,7 +179,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           ) : undefined}
           <button
             class="button is-fullwidth"
-            onClick={() => setIsCreateProjectOpen(true)}
+            onClick={() => setCreateProjectOpen(true)}
           >
             CREATE PROJECT
           </button>
@@ -219,20 +207,23 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           {isProjectSettingsOpen && (
             <ProjectSettings
               projectId={selectedExtendedProject?.id}
-              onDelete={(projectId) => handleDeleteProject(projectId)}
+              isDeleteLoading={isDeleteProjectLoading}
+              onDelete={(projectId) => onDeleteProject(projectId)}
               onClose={() => setIsProjectSettingsOpen(false)}
             />
           )}
-          {!isOrgSettingsOpen && !isProjectSettingsOpen && selectedExtendedProject?.translations?.[0] && (
-            <MainContentBlock
-              currentTranslation={selectedExtendedProject?.translations?.[0]}
-              onDeleteTranslation={() =>
-                onDeleteTranslation(
-                  selectedExtendedProject?.translations?.[0]?.id
-                )
-              }
-            />
-          )}
+          {!isOrgSettingsOpen &&
+            !isProjectSettingsOpen &&
+            selectedExtendedProject?.translations?.[0] && (
+              <MainContentBlock
+                currentTranslation={selectedExtendedProject?.translations?.[0]}
+                onDeleteTranslation={() =>
+                  onDeleteTranslation(
+                    selectedExtendedProject?.translations?.[0]?.id
+                  )
+                }
+              />
+            )}
           {/* TODO: add an empty screen when no translation selected */}
         </div>
       </div>
@@ -240,9 +231,9 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
       {isCreateProjectOpen && (
         <CreateProjectModal
           open={isCreateProjectOpen}
-          isLoading={isLoading}
-          onSubmit={handleCreateProject}
-          onClose={() => setIsCreateProjectOpen(false)}
+          isLoading={isCreateProjectLoading}
+          onSubmit={onCreateProject}
+          onClose={() => setCreateProjectOpen(false)}
         />
       )}
 
@@ -250,7 +241,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
         <CreateTranslationModal
           open={isCreateTranslationOpen}
           isLoading={isCreateTranslationLoading}
-          onSubmit={onSubmitCreateTranslation}
+          onSubmit={onCreateTranslation}
           onClose={() => setCreateTranslationOpen(false)}
         />
       )}

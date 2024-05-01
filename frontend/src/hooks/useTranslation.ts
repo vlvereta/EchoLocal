@@ -25,13 +25,13 @@ export const useTranslation = ({
 }): UseTranslation => {
   const { token } = useAuth();
 
-  const [isCreateTranslationOpen, setIsCreateTranslationOpen] =
+  const [isCreateTranslationOpen, setCreateTranslationOpen] =
     useState<boolean>(false);
-  const [isCreateTranslationLoading, setIsCreateTranslationLoading] =
+  const [isCreateTranslationLoading, setCreateTranslationLoading] =
     useState<boolean>(false);
 
   const handleSubmit = async (payload: CreateTranslationPayload) => {
-    setIsCreateTranslationLoading(true);
+    setCreateTranslationLoading(true);
 
     try {
       const translation = await createProjectTranslation(
@@ -40,13 +40,13 @@ export const useTranslation = ({
         payload
       );
 
-      setIsCreateTranslationOpen(false);
+      setCreateTranslationOpen(false);
       onCreateSuccess(translation);
     } catch (error) {
       console.error("Error while creating translation:", error);
     }
 
-    setIsCreateTranslationLoading(false);
+    setCreateTranslationLoading(false);
   };
 
   const handleDelete = async (id: number) => {
@@ -64,6 +64,6 @@ export const useTranslation = ({
     isCreateLoading: isCreateTranslationLoading,
     onCreate: handleSubmit,
     onDelete: handleDelete,
-    setCreateModalOpen: (open: boolean) => setIsCreateTranslationOpen(open),
+    setCreateModalOpen: (open: boolean) => setCreateTranslationOpen(open),
   };
 };

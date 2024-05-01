@@ -2,12 +2,14 @@ import { FunctionalComponent, h } from "preact";
 
 interface ProjectSettingsProps {
   projectId: number;
+  isDeleteLoading?: boolean;
   onDelete: (projectId: number) => void;
   onClose: () => void;
 }
 
 const ProjectSettings: FunctionalComponent<ProjectSettingsProps> = ({
   projectId,
+  isDeleteLoading,
   onDelete,
   onClose,
 }) => (
@@ -16,7 +18,7 @@ const ProjectSettings: FunctionalComponent<ProjectSettingsProps> = ({
     <div class="buttons">
       <button
         type="button"
-        class="button is-danger"
+        class={`button is-danger${isDeleteLoading ? " is-loading" : ""}`}
         onClick={() => onDelete(projectId)}
       >
         DELETE
