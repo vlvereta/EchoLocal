@@ -1,5 +1,5 @@
+import { h, FunctionalComponent, Fragment } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
-import { h, FunctionalComponent } from "preact";
 
 import {
   ExtendedOrganization,
@@ -183,19 +183,25 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           >
             CREATE PROJECT
           </button>
-          {selectedExtendedProject?.translations?.map(({ language, id }, i) => (
-            <div
-              key={`${id}_${i}`}
-              class="is-flex is-flex-direction-column my-2"
-            >
-              <a>{language}</a>
-            </div>
-          ))}
-          <div class="is-flex is-flex-direction-column my-2">
-            <a onClick={() => setCreateTranslationOpen(true)}>
-              <strong>New</strong>
-            </a>
-          </div>
+          {selectedExtendedProject && (
+            <>
+              {selectedExtendedProject.translations?.map(
+                ({ language, id }, i) => (
+                  <div
+                    key={`${id}_${i}`}
+                    class="is-flex is-flex-direction-column my-2"
+                  >
+                    <a>{language}</a>
+                  </div>
+                )
+              )}
+              <div class="is-flex is-flex-direction-column my-2">
+                <a onClick={() => setCreateTranslationOpen(true)}>
+                  <strong>New Translation</strong>
+                </a>
+              </div>
+            </>
+          )}
         </div>
         <div class="column">
           {isOrgSettingsOpen && (
@@ -214,17 +220,30 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
           {!isOrgSettingsOpen &&
             !isProjectSettingsOpen &&
-            selectedExtendedProject?.translations?.[0] && (
-              <MainContentBlock
-                currentTranslation={selectedExtendedProject?.translations?.[0]}
-                onDeleteTranslation={() =>
-                  onDeleteTranslation(
-                    selectedExtendedProject?.translations?.[0]?.id
-                  )
-                }
-              />
-            )}
-          {/* TODO: add an empty screen when no translation selected */}
+            (selectedExtendedProject ? (
+              selectedExtendedProject.translations?.[0] ? (
+                <MainContentBlock
+                  currentTranslation={
+                    selectedExtendedProject?.translations?.[0]
+                  }
+                  onDeleteTranslation={() =>
+                    onDeleteTranslation(
+                      selectedExtendedProject?.translations?.[0]?.id
+                    )
+                  }
+                />
+              ) : (
+                <div class="has-text-centered">
+                  <span class="title is-5 m-0">
+                    CREATE YOUR TRANSLATION FIRST
+                  </span>
+                </div>
+              )
+            ) : (
+              <div class="has-text-centered">
+                <span class="title is-5 m-0">CREATE YOUR PROJECT FIRST</span>
+              </div>
+            ))}
         </div>
       </div>
 
