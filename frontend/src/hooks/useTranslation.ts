@@ -9,6 +9,9 @@ import { CreateTranslationPayload } from "../types/requests";
 interface UseTranslation {
   isCreateModalOpen: boolean;
   isCreateLoading: boolean;
+  isDeleteLoading: boolean;
+  selectedTranslationId?: number;
+  setSelectedTranslationId: (id?: number) => void;
   setCreateModalOpen: (open: boolean) => void;
   onCreate: (payload: CreateTranslationPayload) => void;
   onDelete: (id: number) => void;
@@ -21,7 +24,7 @@ export const useTranslation = ({
 }: {
   projectId: number;
   onCreateSuccess: (translation: TranslationSheet) => void;
-  onDeleteSuccess: () => void;
+  onDeleteSuccess: (id: number) => void;
 }): UseTranslation => {
   const { token } = useAuth();
 
@@ -29,6 +32,10 @@ export const useTranslation = ({
     useState<boolean>(false);
   const [isCreateTranslationLoading, setCreateTranslationLoading] =
     useState<boolean>(false);
+  const [isDeleteTranslationLoading, setDeleteTranslationLoading] =
+    useState<boolean>(false);
+
+  const [selectedTranslationId, setSelectedTranslationId] = useState<number>();
 
   const handleSubmit = async (payload: CreateTranslationPayload) => {
     setCreateTranslationLoading(true);
@@ -39,8 +46,6 @@ export const useTranslation = ({
         projectId,
         payload
       );
-
-      setCreateTranslationOpen(false);
       onCreateSuccess(translation);
     } catch (error) {
       console.error("Error while creating translation:", error);
@@ -50,18 +55,24 @@ export const useTranslation = ({
   };
 
   const handleDelete = async (id: number) => {
+    setDeleteTranslationLoading(true);
+
     try {
       await deleteTranslation(token, id);
-
-      onDeleteSuccess();
+      onDeleteSuccess(id);
     } catch (error) {
       console.error("Error while deleting project:", error);
     }
+
+    setDeleteTranslationLoading(false);
   };
 
   return {
     isCreateModalOpen: isCreateTranslationOpen,
     isCreateLoading: isCreateTranslationLoading,
+    isDeleteLoading: isDeleteTranslationLoading,
+    selectedTranslationId,
+    setSelectedTranslationId,
     onCreate: handleSubmit,
     onDelete: handleDelete,
     setCreateModalOpen: (open: boolean) => setCreateTranslationOpen(open),

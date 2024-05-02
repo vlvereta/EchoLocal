@@ -10,6 +10,8 @@ interface UseProject {
   isCreateModalOpen: boolean;
   isCreateLoading: boolean;
   isDeleteLoading: boolean;
+  selectedProjectId?: number;
+  setSelectedProjectId: (id?: number) => void;
   setCreateModalOpen: (open: boolean) => void;
   onCreate: (payload: CreateProjectPayload) => void;
   onDelete: (id: number) => void;
@@ -22,16 +24,17 @@ export const useProject = ({
 }: {
   organizationId: number;
   onCreateSuccess: (project: Project) => void;
-  onDeleteSuccess: () => void;
+  onDeleteSuccess: (id: number) => void;
 }): UseProject => {
   const { token } = useAuth();
 
-  const [isCreateProjectOpen, setCreateProjectOpen] =
-    useState<boolean>(false);
+  const [isCreateProjectOpen, setCreateProjectOpen] = useState<boolean>(false);
   const [isCreateProjectLoading, setCreateProjectLoading] =
     useState<boolean>(false);
   const [isDeleteProjectLoading, setDeleteProjectLoading] =
     useState<boolean>(false);
+
+  const [selectedProjectId, setSelectedProjectId] = useState<number>();
 
   const handleSubmit = async (payload: CreateProjectPayload) => {
     setCreateProjectLoading(true);
@@ -42,8 +45,6 @@ export const useProject = ({
         organizationId,
         payload
       );
-
-      setCreateProjectOpen(false);
       onCreateSuccess(project);
     } catch (error) {
       console.error("Error while creating project:", error);
@@ -57,8 +58,7 @@ export const useProject = ({
 
     try {
       await deleteProject(token, id);
-
-      onDeleteSuccess();
+      onDeleteSuccess(id);
     } catch (error) {
       console.error("Error while deleting project:", error);
     }
@@ -70,6 +70,8 @@ export const useProject = ({
     isCreateModalOpen: isCreateProjectOpen,
     isCreateLoading: isCreateProjectLoading,
     isDeleteLoading: isDeleteProjectLoading,
+    selectedProjectId,
+    setSelectedProjectId,
     onCreate: handleSubmit,
     onDelete: handleDelete,
     setCreateModalOpen: (open: boolean) => setCreateProjectOpen(open),

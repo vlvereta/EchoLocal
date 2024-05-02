@@ -1,5 +1,5 @@
 import { h, FunctionalComponent, Fragment } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import {
   ExtendedOrganization,
@@ -13,7 +13,13 @@ import { useAuth } from "../../components/AuthContext";
 import { getOrganization } from "../../api/organizations";
 import OrganizationSettings from "./OrganizationSettings";
 import { useTranslation } from "../../hooks/useTranslation";
-import { getExtendedProjectFromOrganization } from "../../utils";
+import {
+  getProjectFromOrganization,
+  getTranslationFromOrganization,
+  removeProjectFromOrganization,
+  removeTranslationFromOrganizationProject,
+  setTranslationToOrganizationProject,
+} from "../../utils";
 import CreateProjectModal from "../../components/modals/CreateProjectModal";
 import CreateTranslationModal from "../../components/modals/CreateTranslationModal";
 
@@ -27,55 +33,73 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState<boolean>(false);
 
-  const [extendedOrganization, setExtendedOrganization] =
-    useState<ExtendedOrganization>(null);
-  const { name, projects } = extendedOrganization ?? {};
+  const [selectedOrganization, setSelectedOrganization] =
+    useState<ExtendedOrganization>();
+  const { name, projects } = selectedOrganization ?? {};
 
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
     useState<boolean>(false);
-  const [selectedExtendedProject, setSelectedExtendedProject] =
-    useState<ExtendedProject>();
 
   const {
     isCreateModalOpen: isCreateProjectOpen,
     isCreateLoading: isCreateProjectLoading,
     isDeleteLoading: isDeleteProjectLoading,
+    selectedProjectId,
+    setSelectedProjectId,
     onCreate: onCreateProject,
     onDelete: onDeleteProject,
     setCreateModalOpen: setCreateProjectOpen,
   } = useProject({
     organizationId,
     onCreateSuccess: async (project: Project) => {
+      setCreateProjectOpen(false);
       await fetchOrganization();
-
-      const extendedProject = getExtendedProjectFromOrganization(
-        extendedOrganization,
-        project.id
-      );
-      setSelectedExtendedProject(extendedProject);
+      setSelectedProjectId(project.id);
     },
-    onDeleteSuccess: async () => {
+    onDeleteSuccess: async (id: number) => {
       setIsProjectSettingsOpen(false);
-      await fetchOrganization();
+
+      const organization = removeProjectFromOrganization(
+        selectedOrganization,
+        id
+      );
+      setSelectedOrganization(organization);
+      setSelectedProjectId(organization.projects?.[0]?.id);
     },
   });
 
   const {
     isCreateModalOpen: isCreateTranslationOpen,
     isCreateLoading: isCreateTranslationLoading,
+    selectedTranslationId,
+    setSelectedTranslationId,
     onCreate: onCreateTranslation,
     onDelete: onDeleteTranslation,
     setCreateModalOpen: setCreateTranslationOpen,
   } = useTranslation({
-    projectId: selectedExtendedProject?.id,
-    onCreateSuccess: (translation) =>
-      setSelectedExtendedProject({
-        ...selectedExtendedProject,
-        translations: selectedExtendedProject.translations.concat([
-          translation,
-        ]),
-      }),
-    onDeleteSuccess: () => console.log("DELETED"),
+    projectId: selectedProjectId,
+    onCreateSuccess: (translation) => {
+      setCreateTranslationOpen(false);
+
+      const organization = setTranslationToOrganizationProject(
+        selectedOrganization,
+        selectedProjectId,
+        translation
+      );
+      setSelectedOrganization(organization);
+      setSelectedTranslationId(translation.id);
+    },
+    onDeleteSuccess: (id: number) => {
+      const organization = removeTranslationFromOrganizationProject(
+        selectedOrganization,
+        selectedProjectId,
+        id
+      );
+      setSelectedOrganization(organization);
+      setSelectedTranslationId(
+        organization.projects?.[selectedProjectId]?.translations?.[0]?.id
+      );
+    },
   });
 
   const fetchOrganization = useCallback(async () => {
@@ -85,21 +109,42 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
       const organization = await getOrganization(token, {
         id: organizationId,
       });
-      setExtendedOrganization(organization);
-
-      // Extended organization keeps extended projects
-      setSelectedExtendedProject(organization?.projects?.[0]);
+      setSelectedOrganization(organization);
+      setSelectedProjectId(organization.projects?.[0]?.id);
     } catch (error) {
       console.error("Error while fetching organization:", error);
     }
 
     setIsLoading(false);
-  }, [token, organizationId]);
+  }, [token, organizationId, setSelectedProjectId]);
 
   useEffect(() => {
     fetchOrganization();
-    return () => setExtendedOrganization(null);
+    return () => setSelectedOrganization(undefined);
   }, [fetchOrganization]);
+
+  const handleProjectSelect = (event) => {
+    const projectId = +event.target.value;
+    setSelectedProjectId(projectId);
+
+    const project = getProjectFromOrganization(selectedOrganization, projectId);
+    setSelectedTranslationId(project?.translations?.[0]?.id);
+  };
+
+  const selectedProject = useMemo(
+    () => getProjectFromOrganization(selectedOrganization, selectedProjectId),
+    [selectedOrganization, selectedProjectId]
+  );
+
+  const selectedTranslation = useMemo(
+    () =>
+      getTranslationFromOrganization(
+        selectedOrganization,
+        selectedProjectId,
+        selectedTranslationId
+      ),
+    [selectedOrganization, selectedProjectId, selectedTranslationId]
+  );
 
   if (isLoading) {
     return (
@@ -111,14 +156,6 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     );
   }
 
-  const handleProjectSelect = (event) => {
-    const extendedProject = getExtendedProjectFromOrganization(
-      extendedOrganization,
-      +event.target.value
-    );
-    setSelectedExtendedProject(extendedProject);
-  };
-
   return (
     <main class="section">
       <div class="columns">
@@ -129,7 +166,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
                 <span class="title is-4 has-text-centered">{name}</span>
               </div>
             </div>
-            {extendedOrganization && (
+            {selectedOrganization && (
               <div class="column is-narrow">
                 <button
                   class={`button is-small${
@@ -152,7 +189,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
                     {projects?.map((project, i) => (
                       <option
                         key={`${project.id}_${i}`}
-                        selected={project.id === selectedExtendedProject?.id}
+                        selected={project.id === selectedProjectId}
                         value={project.id}
                       >
                         {project.name}
@@ -183,18 +220,16 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           >
             CREATE PROJECT
           </button>
-          {selectedExtendedProject && (
+          {selectedProject && (
             <>
-              {selectedExtendedProject.translations?.map(
-                ({ language, id }, i) => (
-                  <div
-                    key={`${id}_${i}`}
-                    class="is-flex is-flex-direction-column my-2"
-                  >
-                    <a>{language}</a>
-                  </div>
-                )
-              )}
+              {selectedProject.translations?.map(({ language, id }, i) => (
+                <div
+                  key={`${id}_${i}`}
+                  class="is-flex is-flex-direction-column my-2"
+                >
+                  <a onClick={() => setSelectedTranslationId(id)}>{language}</a>
+                </div>
+              ))}
               <div class="is-flex is-flex-direction-column my-2">
                 <a onClick={() => setCreateTranslationOpen(true)}>
                   <strong>New Translation</strong>
@@ -212,7 +247,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
           {isProjectSettingsOpen && (
             <ProjectSettings
-              projectId={selectedExtendedProject?.id}
+              projectId={selectedProjectId}
               isDeleteLoading={isDeleteProjectLoading}
               onDelete={(projectId) => onDeleteProject(projectId)}
               onClose={() => setIsProjectSettingsOpen(false)}
@@ -220,16 +255,12 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
           {!isOrgSettingsOpen &&
             !isProjectSettingsOpen &&
-            (selectedExtendedProject ? (
-              selectedExtendedProject.translations?.[0] ? (
+            (selectedProject ? (
+              selectedTranslation ? (
                 <MainContentBlock
-                  currentTranslation={
-                    selectedExtendedProject?.translations?.[0]
-                  }
+                  currentTranslation={selectedTranslation}
                   onDeleteTranslation={() =>
-                    onDeleteTranslation(
-                      selectedExtendedProject?.translations?.[0]?.id
-                    )
+                    onDeleteTranslation(selectedTranslationId)
                   }
                 />
               ) : (
