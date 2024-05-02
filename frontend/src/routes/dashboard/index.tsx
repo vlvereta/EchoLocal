@@ -1,19 +1,30 @@
-import { useCallback, useEffect, useState } from "preact/hooks";
-import { h, Fragment, FunctionalComponent } from "preact";
+import { h, FunctionalComponent, Fragment } from "preact";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { useAuth } from "../../components/AuthContext";
 import {
-  createOrganizationProject,
-  getOrganization,
-  getOrganizationProjects,
-} from "../../api/organizations";
-import OrganizationSettings from "./OrganizationSettings";
-import { ExtendedOrganization, Project } from "../../types/entities";
+  ExtendedOrganization,
+  ExtendedProject,
+  Project,
+} from "../../types/entities";
 import ProjectSettings from "./ProjectSettings";
-import { CreateProjectPayload } from "src/types/requests";
+import MainContentBlock from "./MainContentBlock";
+import { useProject } from "../../hooks/useProject";
+import { useAuth } from "../../components/AuthContext";
+import { getOrganization } from "../../api/organizations";
+import OrganizationSettings from "./OrganizationSettings";
+import { useTranslation } from "../../hooks/useTranslation";
+import {
+  getProjectFromOrganization,
+  getTranslationFromOrganization,
+  removeProjectFromOrganization,
+  removeTranslationFromOrganizationProject,
+  setTranslationToOrganizationProject,
+} from "../../utils";
+import CreateProjectModal from "../../components/modals/CreateProjectModal";
+import CreateTranslationModal from "../../components/modals/CreateTranslationModal";
 
 interface DashboardProps {
-  organizationId: string;
+  organizationId: number;
 }
 
 const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
@@ -21,76 +32,119 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState<boolean>(false);
+
+  const [selectedOrganization, setSelectedOrganization] =
+    useState<ExtendedOrganization>();
+  const { name, projects } = selectedOrganization ?? {};
+
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
     useState<boolean>(false);
 
-  const [organization, setOrganization] = useState<ExtendedOrganization>(null);
-  const { name } = organization ?? {};
+  const {
+    isCreateModalOpen: isCreateProjectOpen,
+    isCreateLoading: isCreateProjectLoading,
+    isDeleteLoading: isDeleteProjectLoading,
+    selectedProjectId,
+    setSelectedProjectId,
+    onCreate: onCreateProject,
+    onDelete: onDeleteProject,
+    setCreateModalOpen: setCreateProjectOpen,
+  } = useProject({
+    organizationId,
+    onCreateSuccess: async (project: Project) => {
+      setCreateProjectOpen(false);
+      await fetchOrganization();
+      setSelectedProjectId(project.id);
+    },
+    onDeleteSuccess: async (id: number) => {
+      setIsProjectSettingsOpen(false);
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isCreateProjectOpen, setIsCreateProjectOpen] =
-    useState<boolean>(false);
-  const [formData, setFormData] = useState<CreateProjectPayload>({
-    name: "",
-    description: "",
+      const organization = removeProjectFromOrganization(
+        selectedOrganization,
+        id
+      );
+      setSelectedOrganization(organization);
+      setSelectedProjectId(organization.projects?.[0]?.id);
+    },
   });
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const {
+    isCreateModalOpen: isCreateTranslationOpen,
+    isCreateLoading: isCreateTranslationLoading,
+    selectedTranslationId,
+    setSelectedTranslationId,
+    onCreate: onCreateTranslation,
+    onDelete: onDeleteTranslation,
+    setCreateModalOpen: setCreateTranslationOpen,
+  } = useTranslation({
+    projectId: selectedProjectId,
+    onCreateSuccess: (translation) => {
+      setCreateTranslationOpen(false);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    try {
-      const project = await createOrganizationProject(
-        token,
-        organizationId,
-        formData
+      const organization = setTranslationToOrganizationProject(
+        selectedOrganization,
+        selectedProjectId,
+        translation
       );
-
-      if (project?.id) {
-        setIsCreateProjectOpen(false);
-        fetchProjects();
-      }
-    } catch (error) {
-      console.error("Error while creating project:", error);
-    }
-  };
+      setSelectedOrganization(organization);
+      setSelectedTranslationId(translation.id);
+    },
+    onDeleteSuccess: (id: number) => {
+      const organization = removeTranslationFromOrganizationProject(
+        selectedOrganization,
+        selectedProjectId,
+        id
+      );
+      setSelectedOrganization(organization);
+      setSelectedTranslationId(
+        organization.projects?.[selectedProjectId]?.translations?.[0]?.id
+      );
+    },
+  });
 
   const fetchOrganization = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const organization = await getOrganization(token, { id: organizationId });
-      setOrganization(organization);
+      const organization = await getOrganization(token, {
+        id: organizationId,
+      });
+      setSelectedOrganization(organization);
+      setSelectedProjectId(organization.projects?.[0]?.id);
     } catch (error) {
       console.error("Error while fetching organization:", error);
     }
 
     setIsLoading(false);
-  }, [token, organizationId]);
-
-  const fetchProjects = useCallback(async () => {
-    try {
-      const projects = await getOrganizationProjects(token, organizationId);
-      console.log("projects:", projects);
-      setProjects(projects);
-    } catch (error) {
-      console.error("Error while fetching projects:", error);
-    }
-  }, [token, organizationId]);
+  }, [token, organizationId, setSelectedProjectId]);
 
   useEffect(() => {
     fetchOrganization();
-    fetchProjects();
+    return () => setSelectedOrganization(undefined);
+  }, [fetchOrganization]);
 
-    return () => {
-      setOrganization(null);
-      setProjects([]);
-    };
-  }, [fetchOrganization, fetchProjects]);
+  const handleProjectSelect = (event) => {
+    const projectId = +event.target.value;
+    setSelectedProjectId(projectId);
+
+    const project = getProjectFromOrganization(selectedOrganization, projectId);
+    setSelectedTranslationId(project?.translations?.[0]?.id);
+  };
+
+  const selectedProject = useMemo(
+    () => getProjectFromOrganization(selectedOrganization, selectedProjectId),
+    [selectedOrganization, selectedProjectId]
+  );
+
+  const selectedTranslation = useMemo(
+    () =>
+      getTranslationFromOrganization(
+        selectedOrganization,
+        selectedProjectId,
+        selectedTranslationId
+      ),
+    [selectedOrganization, selectedProjectId, selectedTranslationId]
+  );
 
   if (isLoading) {
     return (
@@ -109,10 +163,10 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           <div class="columns is-justify-content-space-between is-vcentered is-mobile">
             <div class="column is-9 pr-0">
               <div class="is-text-overflow">
-                <span class="has-text-weight-bold">{name}</span>
+                <span class="title is-4 has-text-centered">{name}</span>
               </div>
             </div>
-            {organization && (
+            {selectedOrganization && (
               <div class="column is-narrow">
                 <button
                   class={`button is-small${
@@ -127,40 +181,62 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
               </div>
             )}
           </div>
+          {projects?.length ? (
+            <div class="columns is-justify-content-space-between is-vcentered is-mobile">
+              <div class="column is-9 pr-0">
+                <div class="select">
+                  <select onChange={handleProjectSelect}>
+                    {projects?.map((project, i) => (
+                      <option
+                        key={`${project.id}_${i}`}
+                        selected={project.id === selectedProjectId}
+                        value={project.id}
+                      >
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div class="column is-narrow">
+                <button
+                  class={`button is-small${
+                    isProjectSettingsOpen ? " is-active" : ""
+                  }`}
+                  onClick={() =>
+                    setIsProjectSettingsOpen(!isProjectSettingsOpen)
+                  }
+                >
+                  <span class="icon is-small">
+                    <i class="bi bi-gear" />
+                  </span>
+                </button>
+              </div>
+            </div>
+          ) : undefined}
           <button
-            class="button is-primary"
-            onClick={() => setIsCreateProjectOpen(true)}
+            class="button is-fullwidth"
+            onClick={() => setCreateProjectOpen(true)}
           >
             CREATE PROJECT
           </button>
-          {projects.map((project, i) => (
-            <div
-              key={`${project.id}_${i}`}
-              class="columns is-justify-content-space-between is-vcentered is-mobile"
-            >
-              <div class="column is-9 pr-0">
-                <div class="is-text-overflow">
-                  <span class="has-text-weight-bold">{project.name}</span>
+          {selectedProject && (
+            <>
+              {selectedProject.translations?.map(({ language, id }, i) => (
+                <div
+                  key={`${id}_${i}`}
+                  class="is-flex is-flex-direction-column my-2"
+                >
+                  <a onClick={() => setSelectedTranslationId(id)}>{language}</a>
                 </div>
+              ))}
+              <div class="is-flex is-flex-direction-column my-2">
+                <a onClick={() => setCreateTranslationOpen(true)}>
+                  <strong>New Translation</strong>
+                </a>
               </div>
-              {organization && (
-                <div class="column is-narrow">
-                  <button
-                    class={`button is-small${
-                      isProjectSettingsOpen ? " is-active" : ""
-                    }`}
-                    onClick={() =>
-                      setIsProjectSettingsOpen(!isProjectSettingsOpen)
-                    }
-                  >
-                    <span class="icon is-small">
-                      <i class="bi bi-gear" />
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            </>
+          )}
         </div>
         <div class="column">
           {isOrgSettingsOpen && (
@@ -170,70 +246,55 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
             />
           )}
           {isProjectSettingsOpen && (
-            <ProjectSettings onClose={() => setIsProjectSettingsOpen(false)} />
+            <ProjectSettings
+              projectId={selectedProjectId}
+              isDeleteLoading={isDeleteProjectLoading}
+              onDelete={(projectId) => onDeleteProject(projectId)}
+              onClose={() => setIsProjectSettingsOpen(false)}
+            />
           )}
-          {!isOrgSettingsOpen && !isProjectSettingsOpen && (
-            <>
-              <h2 class="subtitle has-text-weight-bold">MAIN Content!</h2>
-              <h2 class="subtitle has-text-weight-bold">MORE Content!</h2>
-              <h2 class="subtitle has-text-weight-bold">EVEN MORE Content!</h2>
-            </>
-          )}
+          {!isOrgSettingsOpen &&
+            !isProjectSettingsOpen &&
+            (selectedProject ? (
+              selectedTranslation ? (
+                <MainContentBlock
+                  currentTranslation={selectedTranslation}
+                  onDeleteTranslation={() =>
+                    onDeleteTranslation(selectedTranslationId)
+                  }
+                />
+              ) : (
+                <div class="has-text-centered">
+                  <span class="title is-5 m-0">
+                    CREATE YOUR TRANSLATION FIRST
+                  </span>
+                </div>
+              )
+            ) : (
+              <div class="has-text-centered">
+                <span class="title is-5 m-0">CREATE YOUR PROJECT FIRST</span>
+              </div>
+            ))}
         </div>
       </div>
-      <div class={`modal${isCreateProjectOpen ? " is-active" : ""}`}>
-        <div class="modal-background" />
-        <div class="modal-content">
-          <form onSubmit={handleSubmit} class="box">
-            <div class="field">
-              <label htmlFor="name" class="label">
-                Create new project
-              </label>
-              <div class="control">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Project 1"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
 
-            <div class="field">
-              <label htmlFor="name" class="label">
-                Description
-              </label>
-              <div class="control">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Bla-bla-bla..."
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <button type="submit" class="button is-primary">
-              Create
-            </button>
-          </form>
-        </div>
-        <button
-          class="modal-close is-large"
-          aria-label="close"
-          onClick={() => setIsCreateProjectOpen(false)}
+      {isCreateProjectOpen && (
+        <CreateProjectModal
+          open={isCreateProjectOpen}
+          isLoading={isCreateProjectLoading}
+          onSubmit={onCreateProject}
+          onClose={() => setCreateProjectOpen(false)}
         />
-      </div>
+      )}
+
+      {isCreateTranslationOpen && (
+        <CreateTranslationModal
+          open={isCreateTranslationOpen}
+          isLoading={isCreateTranslationLoading}
+          onSubmit={onCreateTranslation}
+          onClose={() => setCreateTranslationOpen(false)}
+        />
+      )}
     </main>
   );
 };

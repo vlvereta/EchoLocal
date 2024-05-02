@@ -79,7 +79,7 @@ const Organizations = () => {
               class="button is-fullwidth is-primary"
               onClick={() => route("/organizations/create")}
             >
-              Create new
+              CREATE ORGANIZATION
             </button>
           </div>
         </div>

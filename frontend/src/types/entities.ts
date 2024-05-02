@@ -3,9 +3,9 @@ export enum LocalStorageItem {
 }
 
 export interface Organization {
-  id: string;
+  id: number;
   name: string;
-  ownerId: string;
+  owner_id: number;
 }
 
 export interface ExtendedOrganization extends Organization {
@@ -13,7 +13,7 @@ export interface ExtendedOrganization extends Organization {
 }
 
 export interface Project {
-  id: string;
+  id: number;
   name: string;
   description?: string;
 }
@@ -23,5 +23,15 @@ export interface ExtendedProject extends Project {
 }
 
 export interface TranslationSheet {
-  id: string;
+  id: number;
+  language: string;
+  project_id: number;
+  updated_at: string;
+}
+
+export interface TranslationKey {
+  id: number;
+  sheet_id: number;
+  key: string;
+  value: string;
 }

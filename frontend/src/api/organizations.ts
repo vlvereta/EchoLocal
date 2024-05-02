@@ -59,7 +59,7 @@ export const deleteOrganization = async (
 
 export const getOrganizationProjects = async (
   token: string,
-  organizationId: string
+  organizationId: number
 ): Promise<Project[]> => {
   const response = await fetch(
     `${apiURL}/organizations/${organizationId}/projects`,
@@ -74,7 +74,7 @@ export const getOrganizationProjects = async (
 
 export const createOrganizationProject = async (
   token: string,
-  organizationId: string,
+  organizationId: number,
   payload: CreateProjectPayload
 ): Promise<Project> => {
   const response = await fetch(

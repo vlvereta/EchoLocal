@@ -1,7 +1,6 @@
 import express from "express";
 import { verifyAuth } from "../middlewares/verifyAuth";
 import { pool } from "..";
-import { mockedExtendedOrganization } from "../mocks";
 
 export const organizationsRouter = express.Router();
 
@@ -21,27 +20,53 @@ organizationsRouter.get("/", verifyAuth, async (req, res) => {
   }
 });
 
-// Get organization by id
+// Get extended organization by id
 organizationsRouter.get("/:organization_id", verifyAuth, async (req, res) => {
   // @ts-ignore
   const { user } = req;
   const { organization_id } = req.params;
 
   try {
-    const query = `SELECT * FROM organizations WHERE id = $1;`;
-    const { rows } = await pool.query(query, [organization_id]);
+    const { rows: organizations } = await pool.query(
+      `SELECT * FROM organizations WHERE id = $1`,
+      [organization_id]
+    );
 
-    // Populate organization by mocked fields until there's no extended data
-    const organization = {
-      ...mockedExtendedOrganization,
-      ...rows[0],
-    };
+    const currentOrganization = organizations?.[0];
+    if (currentOrganization) {
+      if (currentOrganization.owner_id === user.id) {
+        const query = `SELECT * FROM projects WHERE org_id = $1`;
+        const { rows: projects } = await pool.query(query, [organization_id]);
 
-    // Verify ability to get organization by owner
-    if (organization.owner_id === user.id) {
-      res.status(200).json(organization);
+        // Populate projects by translations
+        await Promise.all(
+          projects?.map(async (project) => {
+            const { rows: translations } = await pool.query(
+              `SELECT * FROM translations WHERE project_id = $1`,
+              [project.id]
+            );
+
+            return {
+              ...project,
+              translations,
+            };
+          })
+        )
+          .then(
+            (populatedProjects) =>
+              (currentOrganization.projects = populatedProjects)
+          )
+          .catch((error) => {
+            console.error("Error querying the database:", error);
+            res.status(500).send("Server error");
+          });
+
+        res.status(200).json(currentOrganization);
+      } else {
+        res.status(403).send("Not authorized");
+      }
     } else {
-      res.status(403).send("Not authorized");
+      res.status(404).send("Not found");
     }
   } catch (error) {
     console.error("Error querying the database:", error);
