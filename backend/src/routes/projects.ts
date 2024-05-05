@@ -62,7 +62,6 @@ projectsRouter.post(
   "/:project_id/translations",
   verifyAuth,
   async (req, res) => {
-    // @ts-ignore
     const { project_id } = req.params;
     const { language } = req.body;
 
@@ -71,8 +70,6 @@ projectsRouter.post(
         `SELECT * FROM projects WHERE id = $1`,
         [project_id]
       );
-
-      // TODO: add verification that user has access
 
       const currentProject = projects?.[0];
       if (currentProject) {

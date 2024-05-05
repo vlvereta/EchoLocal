@@ -1,15 +1,17 @@
 import { FunctionalComponent, h } from "preact";
 import { useState } from "preact/hooks";
 
-import { TranslationKeyData } from "../types/entities";
 import { useTranslationKey } from "../hooks/useTranslationKey";
+import { TranslationKey, TranslationKeyData } from "../types/entities";
 
 interface NewTranslationKeyRowProps {
   translationId: number;
+  onAdd: (key: TranslationKey) => void;
 }
 
 const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
   translationId,
+  onAdd,
 }) => {
   const initialState = {
     key: "",
@@ -20,7 +22,10 @@ const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
 
   const { isCreateLoading: isLoading, onCreate } = useTranslationKey({
     translationId,
-    onCreateSuccess: () => setFormData(initialState),
+    onCreateSuccess: (key: TranslationKey) => {
+      onAdd(key);
+      setFormData(initialState);
+    },
   });
 
   const handleChange = (event) => {
