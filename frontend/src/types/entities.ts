@@ -29,9 +29,12 @@ export interface TranslationSheet {
   updated_at: string;
 }
 
-export interface TranslationKey {
-  id: number;
-  sheet_id: number;
+export interface TranslationKeyData {
   key: string;
   value: string;
+}
+
+export interface TranslationKey extends TranslationKeyData {
+  id: number;
+  sheet_id: number;
 }

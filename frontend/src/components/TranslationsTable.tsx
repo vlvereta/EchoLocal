@@ -1,6 +1,8 @@
 import { FunctionalComponent, h } from "preact";
 
 import { TranslationKey } from "../types/entities";
+import TranslationKeyRow from "./TranslationKeyRow";
+import NewTranslationKeyRow from "./NewTranslationKeyRow";
 
 interface TranslationsTableProps {
   keys: TranslationKey[];
@@ -16,22 +18,19 @@ const TranslationsTable: FunctionalComponent<TranslationsTableProps> = ({
           <tr>
             <th>Key</th>
             <th>Value</th>
-            <th>New value</th>
+            <th colSpan={2}>New value</th>
           </tr>
         </thead>
         <tbody>
-          {keys.map(({ key, value }) => (
-            <tr key={key}>
-              <td>
-                <strong>{key}</strong>
-              </td>
-              <td>{value}</td>
-              <td>
-                <input type="text" class="input" placeholder="" />
-              </td>
-            </tr>
+          {keys.map((key) => (
+            <TranslationKeyRow
+              key={key}
+              translationId={1}
+              translationKey={key}
+            />
           ))}
         </tbody>
+        <NewTranslationKeyRow translationId={1} />
       </table>
     </div>
   );

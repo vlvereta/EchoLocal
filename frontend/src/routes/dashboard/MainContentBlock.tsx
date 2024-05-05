@@ -1,6 +1,5 @@
 import { FunctionalComponent, h } from "preact";
 
-import { mockedTranslationKeys } from "../../mocks";
 import { TranslationSheet } from "../../types/entities";
 import TranslationsTable from "../../components/TranslationsTable";
 
@@ -27,14 +26,14 @@ const MainContentBlock: FunctionalComponent<MainContentBlockProps> = ({
         <div class="level-right">
           <button
             type="button"
-            class="button is-danger level-item"
+            class="button is-danger is-light level-item"
             onClick={onDeleteTranslation}
           >
             DELETE
           </button>
         </div>
       </div>
-      <TranslationsTable keys={mockedTranslationKeys} />
+      <TranslationsTable keys={[]} />
     </div>
   );
 };
