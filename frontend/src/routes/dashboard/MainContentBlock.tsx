@@ -1,7 +1,10 @@
 import { FunctionalComponent, h } from "preact";
+import { useEffect, useState } from "preact/hooks";
 
-import { TranslationSheet } from "../../types/entities";
+import { useAuth } from "../../components/AuthContext";
+import { getTranslationKeys } from "../../api/translations";
 import TranslationsTable from "../../components/TranslationsTable";
+import { TranslationKey, TranslationSheet } from "../../types/entities";
 
 interface MainContentBlockProps {
   currentTranslation: TranslationSheet;
@@ -12,6 +15,32 @@ const MainContentBlock: FunctionalComponent<MainContentBlockProps> = ({
   currentTranslation,
   onDeleteTranslation,
 }) => {
+  const { token } = useAuth();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [keys, setKeys] = useState<TranslationKey[]>([]);
+
+  useEffect(() => {
+    const fetchTranslationKeys = async () => {
+      setIsLoading(true);
+
+      const keys = await getTranslationKeys(token, currentTranslation.id);
+      setKeys(keys);
+
+      setIsLoading(false);
+    };
+    fetchTranslationKeys();
+  }, [currentTranslation.id, token]);
+
+  if (isLoading) {
+    return (
+      <progress class="progress is-small is-dark" max="100">
+        50%
+      </progress>
+    );
+  }
+
   return (
     <div class="box">
       <div class="block level">
@@ -33,7 +62,11 @@ const MainContentBlock: FunctionalComponent<MainContentBlockProps> = ({
           </button>
         </div>
       </div>
-      <TranslationsTable keys={[]} />
+      <TranslationsTable
+        translationId={currentTranslation.id}
+        keys={keys}
+        setKeys={(keys: TranslationKey[]) => setKeys(keys)}
+      />
     </div>
   );
 };
