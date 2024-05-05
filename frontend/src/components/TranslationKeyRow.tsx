@@ -7,17 +7,27 @@ import { useTranslationKey } from "../hooks/useTranslationKey";
 interface TranslationKeyRowProps {
   translationId: number;
   translationKey: TranslationKey;
+  handleUpdate: (key: TranslationKey) => void;
+  handleDelete: (id: number) => void;
 }
 
 const TranslationKeyRow: FunctionalComponent<TranslationKeyRowProps> = ({
   translationId,
-  translationKey: { key, value },
+  translationKey: { id, key, value },
+  handleUpdate,
+  handleDelete,
 }) => {
   const [newValue, setNewValue] = useState<string>("");
 
-  const {} = useTranslationKey({
-    translationId,
-  });
+  const { isUpdateLoading, isDeleteLoading, onUpdate, onDelete } =
+    useTranslationKey({
+      translationId,
+      onUpdateSuccess: (key: TranslationKey) => {
+        handleUpdate(key);
+        setNewValue("");
+      },
+      onDeleteSuccess: () => handleDelete(id),
+    });
 
   return (
     <tr key={key}>
@@ -34,16 +44,27 @@ const TranslationKeyRow: FunctionalComponent<TranslationKeyRowProps> = ({
           onInput={(event) =>
             setNewValue((event.target as HTMLInputElement).value)
           }
+          disabled={isUpdateLoading || isDeleteLoading}
         />
       </td>
       <td>
         <div class="buttons">
-          <button class="button" disabled={!newValue}>
+          <button
+            class={`button${isUpdateLoading ? " is-loading" : ""}`}
+            onClick={() => onUpdate(id, { key, value: newValue })}
+            disabled={!newValue || isDeleteLoading}
+          >
             <span class="icon is-small">
               <i class="bi bi-floppy" />
             </span>
           </button>
-          <button class="button is-outlined is-danger">
+          <button
+            class={`button is-outlined is-danger${
+              isDeleteLoading ? " is-loading" : ""
+            }`}
+            onClick={() => onDelete(id)}
+            disabled={isUpdateLoading}
+          >
             <span class="icon is-small">
               <i class="bi bi-x-circle" />
             </span>

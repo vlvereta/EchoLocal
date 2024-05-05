@@ -43,10 +43,12 @@ const TranslationsTable: FunctionalComponent<TranslationsTableProps> = ({
               key={key}
               translationId={translationId}
               translationKey={key}
+              handleUpdate={handleUpdate}
+              handleDelete={handleDelete}
             />
           ))}
         </tbody>
-        <NewTranslationKeyRow translationId={translationId} onAdd={handleCreate} />
+        <NewTranslationKeyRow translationId={translationId} handleCreate={handleCreate} />
       </table>
     </div>
   );

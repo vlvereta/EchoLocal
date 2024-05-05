@@ -17,15 +17,29 @@ const MainContentBlock: FunctionalComponent<MainContentBlockProps> = ({
 }) => {
   const { token } = useAuth();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [keys, setKeys] = useState<TranslationKey[]>([]);
 
   useEffect(() => {
     const fetchTranslationKeys = async () => {
+      setIsLoading(true);
+
       const keys = await getTranslationKeys(token, currentTranslation.id);
       setKeys(keys);
+
+      setIsLoading(false);
     };
     fetchTranslationKeys();
   }, [currentTranslation.id, token]);
+
+  if (isLoading) {
+    return (
+      <progress class="progress is-small is-dark" max="100">
+        50%
+      </progress>
+    );
+  }
 
   return (
     <div class="box">

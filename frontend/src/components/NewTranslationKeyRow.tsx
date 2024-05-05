@@ -6,12 +6,12 @@ import { TranslationKey, TranslationKeyData } from "../types/entities";
 
 interface NewTranslationKeyRowProps {
   translationId: number;
-  onAdd: (key: TranslationKey) => void;
+  handleCreate: (key: TranslationKey) => void;
 }
 
 const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
   translationId,
-  onAdd,
+  handleCreate,
 }) => {
   const initialState = {
     key: "",
@@ -23,7 +23,7 @@ const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
   const { isCreateLoading: isLoading, onCreate } = useTranslationKey({
     translationId,
     onCreateSuccess: (key: TranslationKey) => {
-      onAdd(key);
+      handleCreate(key);
       setFormData(initialState);
     },
   });
@@ -42,7 +42,7 @@ const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
           placeholder="New key"
           name="key"
           value={formData.key}
-          onChange={handleChange}
+          onInput={handleChange}
           required
         />
       </td>
@@ -53,7 +53,7 @@ const NewTranslationKeyRow: FunctionalComponent<NewTranslationKeyRowProps> = ({
           placeholder="Value"
           name="value"
           value={formData.value}
-          onChange={handleChange}
+          onInput={handleChange}
           required
         />
       </td>

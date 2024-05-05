@@ -67,7 +67,7 @@ translationsRouter.post(
           key,
           value,
         ]);
-        res.status(201).send(translationKeys?.[0]);
+        res.status(201).json(translationKeys?.[0]);
       } else {
         res.status(404).send("Not found");
       }
