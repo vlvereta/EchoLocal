@@ -2,10 +2,12 @@ import { h, FunctionalComponent, Fragment } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import {
-  ExtendedOrganization,
-  ExtendedProject,
-  Project,
-} from "../../types/entities";
+  getProjectFromOrganization,
+  getTranslationFromOrganization,
+  removeProjectFromOrganization,
+  removeTranslationFromOrganizationProject,
+  setTranslationToOrganizationProject,
+} from "../../utils";
 import ProjectSettings from "./ProjectSettings";
 import MainContentBlock from "./MainContentBlock";
 import { useProject } from "../../hooks/useProject";
@@ -13,13 +15,7 @@ import { useAuth } from "../../components/AuthContext";
 import { getOrganization } from "../../api/organizations";
 import OrganizationSettings from "./OrganizationSettings";
 import { useTranslation } from "../../hooks/useTranslation";
-import {
-  getProjectFromOrganization,
-  getTranslationFromOrganization,
-  removeProjectFromOrganization,
-  removeTranslationFromOrganizationProject,
-  setTranslationToOrganizationProject,
-} from "../../utils";
+import { ExtendedOrganization, Project } from "../../types/entities";
 import CreateProjectModal from "../../components/modals/CreateProjectModal";
 import CreateTranslationModal from "../../components/modals/CreateTranslationModal";
 
@@ -32,13 +28,12 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState<boolean>(false);
+  const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
+    useState<boolean>(false);
 
   const [selectedOrganization, setSelectedOrganization] =
     useState<ExtendedOrganization>();
   const { name, projects } = selectedOrganization ?? {};
-
-  const [isProjectSettingsOpen, setIsProjectSettingsOpen] =
-    useState<boolean>(false);
 
   const {
     isCreateModalOpen: isCreateProjectOpen,
@@ -51,10 +46,21 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
     setCreateModalOpen: setCreateProjectOpen,
   } = useProject({
     organizationId,
-    onCreateSuccess: async (project: Project) => {
+    onCreateSuccess: (project: Project) => {
       setCreateProjectOpen(false);
-      await fetchOrganization();
-      setSelectedProjectId(project.id);
+
+      setIsLoading(true);
+
+      getOrganization(token, {
+        id: organizationId,
+      })
+        .then((organization) =>
+          handleUpdateOrganization(organization, project.id)
+        )
+        .catch((error) =>
+          console.error("Error while fetching organization:", error)
+        )
+        .finally(() => setIsLoading(false));
     },
     onDeleteSuccess: async (id: number) => {
       setIsProjectSettingsOpen(false);
@@ -63,8 +69,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
         selectedOrganization,
         id
       );
-      setSelectedOrganization(organization);
-      setSelectedProjectId(organization.projects?.[0]?.id);
+      handleUpdateOrganization(organization);
     },
   });
 
@@ -86,8 +91,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
         selectedProjectId,
         translation
       );
-      setSelectedOrganization(organization);
-      setSelectedTranslationId(translation.id);
+      handleUpdateOrganization(organization, selectedProjectId, translation.id);
     },
     onDeleteSuccess: (id: number) => {
       const organization = removeTranslationFromOrganizationProject(
@@ -95,35 +99,64 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
         selectedProjectId,
         id
       );
-      setSelectedOrganization(organization);
-      setSelectedTranslationId(
-        organization.projects?.[selectedProjectId]?.translations?.[0]?.id
-      );
+      handleUpdateOrganization(organization, selectedProjectId);
     },
   });
 
-  const fetchOrganization = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const organization = await getOrganization(token, {
-        id: organizationId,
-      });
+  const handleUpdateOrganization = useCallback(
+    (
+      organization: ExtendedOrganization,
+      projectId?: number,
+      translationId?: number
+    ) => {
       setSelectedOrganization(organization);
-      setSelectedProjectId(organization.projects?.[0]?.id);
-    } catch (error) {
-      console.error("Error while fetching organization:", error);
-    }
 
-    setIsLoading(false);
-  }, [token, organizationId, setSelectedProjectId]);
+      if (projectId) {
+        const project = getProjectFromOrganization(organization, projectId);
+        if (project) {
+          setSelectedProjectId(projectId);
+
+          const translation = getTranslationFromOrganization(
+            organization,
+            projectId,
+            translationId
+          );
+          if (translation) {
+            setSelectedTranslationId(translationId);
+          } else {
+            setSelectedTranslationId(project.translations?.[0]?.id);
+          }
+
+          return;
+        }
+      }
+
+      setSelectedProjectId(organization.projects?.[0]?.id);
+      setSelectedTranslationId(
+        organization.projects?.[0]?.translations?.[0]?.id
+      );
+    },
+    [setSelectedProjectId, setSelectedTranslationId]
+  );
 
   useEffect(() => {
-    fetchOrganization();
+    setIsLoading(true);
+
+    getOrganization(token, {
+      id: organizationId,
+    })
+      .then((organization) => handleUpdateOrganization(organization))
+      .catch((error) =>
+        console.error("Error while fetching organization:", error)
+      )
+      .finally(() => setIsLoading(false));
+
     return () => setSelectedOrganization(undefined);
-  }, [fetchOrganization]);
+  }, [handleUpdateOrganization, organizationId, token]);
 
   const handleProjectSelect = (event) => {
+    setIsOrgSettingsOpen(false);
+
     const projectId = +event.target.value;
     setSelectedProjectId(projectId);
 
@@ -245,7 +278,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
               onClose={() => setIsOrgSettingsOpen(false)}
             />
           )}
-          {isProjectSettingsOpen && (
+          {!isOrgSettingsOpen && isProjectSettingsOpen && (
             <ProjectSettings
               projectId={selectedProjectId}
               isDeleteLoading={isDeleteProjectLoading}
