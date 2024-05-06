@@ -38,16 +38,19 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
   const {
     isCreateModalOpen: isCreateProjectOpen,
     isCreateLoading: isCreateProjectLoading,
+    isUpdateLoading: isUpdateProjectLoading,
     isDeleteLoading: isDeleteProjectLoading,
     selectedProjectId,
     setSelectedProjectId,
     onCreate: onCreateProject,
+    onUpdate: onUpdateProject,
     onDelete: onDeleteProject,
     setCreateModalOpen: setCreateProjectOpen,
   } = useProject({
     organizationId,
     onCreateSuccess: (project: Project) => {
       setCreateProjectOpen(false);
+      setIsProjectSettingsOpen(false);
 
       setIsLoading(true);
 
@@ -61,6 +64,18 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           console.error("Error while fetching organization:", error)
         )
         .finally(() => setIsLoading(false));
+    },
+    onUpdateSuccess: (project: Project) => {
+      const organization = {
+        ...selectedOrganization,
+        projects: selectedOrganization.projects.map((currentProject) => {
+          if (currentProject.id === project.id) {
+            return { ...currentProject, ...project };
+          }
+          return currentProject;
+        }),
+      };
+      handleUpdateOrganization(organization, project.id);
     },
     onDeleteSuccess: async (id: number) => {
       setIsProjectSettingsOpen(false);
@@ -156,6 +171,7 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
 
   const handleProjectSelect = (event) => {
     setIsOrgSettingsOpen(false);
+    setIsProjectSettingsOpen(false);
 
     const projectId = +event.target.value;
     setSelectedProjectId(projectId);
@@ -280,9 +296,11 @@ const Dashboard: FunctionalComponent<DashboardProps> = ({ organizationId }) => {
           )}
           {!isOrgSettingsOpen && isProjectSettingsOpen && (
             <ProjectSettings
-              projectId={selectedProjectId}
+              project={selectedProject}
+              isUpdateLoading={isUpdateProjectLoading}
               isDeleteLoading={isDeleteProjectLoading}
-              onDelete={(projectId) => onDeleteProject(projectId)}
+              onUpdate={onUpdateProject}
+              onDelete={onDeleteProject}
               onClose={() => setIsProjectSettingsOpen(false)}
             />
           )}

@@ -1,6 +1,25 @@
 import { apiURL } from "..";
 import { TranslationSheet } from "../types/entities";
-import { CreateTranslationPayload } from "../types/requests";
+import {
+  CreateProjectPayload,
+  CreateTranslationPayload,
+} from "../types/requests";
+
+export const updateProject = async (
+  token: string,
+  projectId: number,
+  payload: CreateProjectPayload
+) => {
+  const response = await fetch(`${apiURL}/projects/${projectId}`, {
+    method: "PUT",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  return response.json();
+};
 
 export const deleteProject = async (
   token: string,

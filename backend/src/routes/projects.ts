@@ -4,6 +4,32 @@ import { pool } from "..";
 
 export const projectsRouter = express.Router();
 
+// Update project
+projectsRouter.put("/:project_id", verifyAuth, async (req, res) => {
+  const { project_id } = req.params;
+  const { name, description } = req.body;
+
+  try {
+    const { rows } = await pool.query(`SELECT * FROM projects WHERE id = $1`, [
+      project_id,
+    ]);
+
+    const currentProject = rows?.[0];
+    if (currentProject) {
+      const { rows: projects } = await pool.query(
+        `UPDATE projects SET name = $1, description = $2 WHERE id = $3 RETURNING *`,
+        [name, description, project_id]
+      );
+      res.status(200).json(projects?.[0]);
+    } else {
+      res.status(404).send("Not found");
+    }
+  } catch (error) {
+    console.error("Error querying the database:", error);
+    res.status(500).send("Server error");
+  }
+});
+
 // Delete project
 projectsRouter.delete("/:project_id", verifyAuth, async (req, res) => {
   // @ts-ignore
